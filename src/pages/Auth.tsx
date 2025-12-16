@@ -6,6 +6,15 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+  DialogFooter,
+} from "@/components/ui/dialog";
 import { useToast } from '@/hooks/use-toast';
 import { Eye, EyeOff, Loader2, ArrowLeft } from 'lucide-react';
 import Header from '@/components/layout/Header';
@@ -39,9 +48,51 @@ const Auth: React.FC = () => {
     confirmPassword: ''
   });
 
-  const { user, signIn, signUp, signInWithGoogle, signInWithFacebook } = useAuth();
+  const { user, signIn, signUp, signInWithGoogle, signInWithFacebook, resetPassword } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const [isResetOpen, setIsResetOpen] = useState(false);
+  const [resetEmail, setResetEmail] = useState('');
+  const [isResetLoading, setIsResetLoading] = useState(false);
+
+  const handleResetPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!resetEmail) {
+      toast({
+        title: "Error",
+        description: "Please enter your email address",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setIsResetLoading(true);
+    try {
+      const { error } = await resetPassword(resetEmail);
+      if (error) {
+        toast({
+          title: "Error",
+          description: error.message,
+          variant: "destructive"
+        });
+      } else {
+        toast({
+          title: "Check your email",
+          description: "We have sent a password reset link to your email address.",
+        });
+        setIsResetOpen(false);
+        setResetEmail('');
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Something went wrong",
+        variant: "destructive"
+      });
+    } finally {
+      setIsResetLoading(false);
+    }
+  };
 
   useEffect(() => {
     if (user) {
@@ -258,6 +309,17 @@ const Auth: React.FC = () => {
                 {errors.password && (
                   <p className="text-sm text-destructive">{errors.password}</p>
                 )}
+                {isLogin && (
+                  <div className="flex justify-end">
+                    <button
+                      type="button"
+                      onClick={() => setIsResetOpen(true)}
+                      className="text-sm text-primary hover:underline"
+                    >
+                      Forgot password?
+                    </button>
+                  </div>
+                )}
               </div>
 
               {!isLogin && (
@@ -294,17 +356,21 @@ const Auth: React.FC = () => {
             </div>
 
             <div className="flex flex-col gap-2">
-              <Button variant="outline" type="button" onClick={handleGoogleLogin} className="w-full">
-                <svg className="mr-2 h-4 w-4" aria-hidden="true" focusable="false" data-prefix="fab" data-icon="google" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 488 512">
-                  <path fill="currentColor" d="M488 261.8C488 403.3 391.1 504 248 504 110.8 504 0 393.2 0 256S110.8 8 248 8c66.8 0 123 24.5 166.3 64.9l-67.5 64.9C258.5 52.6 94.3 116.6 94.3 256c0 86.5 69.1 156.6 153.7 156.6 98.2 0 135-70.4 140.8-106.9H248v-85.3h236.1c2.3 12.7 3.9 24.9 3.9 41.4z"></path>
-                </svg>
-                Google
+              <Button variant="outline" type="button" onClick={handleGoogleLogin} className="w-full relative">
+                <img
+                  src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg"
+                  alt="Google"
+                  className="w-5 h-5 mr-2 absolute left-4"
+                />
+                Continue with Google
               </Button>
-              <Button variant="outline" type="button" onClick={handleFacebookLogin} className="w-full">
-                <svg className="mr-2 h-4 w-4" aria-hidden="true" focusable="false" data-prefix="fab" data-icon="facebook" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
-                  <path fill="currentColor" d="M504 256C504 119 393 8 256 8S8 119 8 256c0 121.1 87.1 222.4 202 245.9V329.7h-60.8V256h60.8V203.4c0-59.5 35.1-92.6 89.9-92.6 26.2 0 53.6 4.7 53.6 4.7v58.8h-30.2c-29.4 0-38.5 18.2-38.5 36.8V256h66.3l-10.6 73.7H312v172.2C424.9 478.4 504 377.1 504 256z"></path>
-                </svg>
-                Facebook
+              <Button variant="outline" type="button" onClick={handleFacebookLogin} className="w-full relative">
+                <img
+                  src="https://upload.wikimedia.org/wikipedia/commons/b/b8/2021_Facebook_icon.svg"
+                  alt="Facebook"
+                  className="w-5 h-5 mr-2 absolute left-4"
+                />
+                Continue with Facebook
               </Button>
             </div>
 
@@ -326,6 +392,39 @@ const Auth: React.FC = () => {
             </div>
           </CardContent>
         </Card>
+
+        <Dialog open={isResetOpen} onOpenChange={setIsResetOpen}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Reset Password</DialogTitle>
+              <DialogDescription>
+                Enter your email address and we'll send you a link to reset your password.
+              </DialogDescription>
+            </DialogHeader>
+            <form onSubmit={handleResetPassword} className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="reset-email">Email</Label>
+                <Input
+                  id="reset-email"
+                  type="email"
+                  placeholder="name@example.com"
+                  value={resetEmail}
+                  onChange={(e) => setResetEmail(e.target.value)}
+                  disabled={isResetLoading}
+                />
+              </div>
+              <DialogFooter>
+                <Button type="button" variant="outline" onClick={() => setIsResetOpen(false)} disabled={isResetLoading}>
+                  Cancel
+                </Button>
+                <Button type="submit" disabled={isResetLoading}>
+                  {isResetLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                  Send Reset Link
+                </Button>
+              </DialogFooter>
+            </form>
+          </DialogContent>
+        </Dialog>
       </main>
       <Footer />
     </div>

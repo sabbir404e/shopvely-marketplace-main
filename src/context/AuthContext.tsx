@@ -23,6 +23,7 @@ interface AuthContextType {
   signInWithFacebook: () => Promise<{ error: Error | null }>;
   signOut: () => Promise<void>;
   refreshProfile: () => Promise<void>;
+  resetPassword: (email: string) => Promise<{ error: Error | null }>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -197,7 +198,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       signInWithGoogle,
       signInWithFacebook,
       signOut,
-      refreshProfile
+      refreshProfile,
+      resetPassword: async (email: string) => {
+        const redirectUrl = `${window.location.origin}/auth/update-password`;
+        const { error } = await supabase.auth.resetPasswordForEmail(email, {
+          redirectTo: redirectUrl,
+        });
+        return { error };
+      }
     }}>
       {children}
     </AuthContext.Provider>

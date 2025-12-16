@@ -87,8 +87,48 @@ const FeaturedProducts: React.FC = () => {
             </Link>
           </div>
         </div>
+
+
+        {/* All Products */}
+        <div className="mt-12">
+          <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-indigo-500/10 rounded-lg">
+                <Sparkles className="h-5 w-5 text-indigo-500" />
+              </div>
+              <div>
+                <h2 className="text-2xl lg:text-3xl font-bold text-foreground">{t('hero.allProducts')}</h2>
+              </div>
+            </div>
+            <Link
+              to="/shop"
+              className="hidden sm:flex items-center gap-1 text-primary hover:text-primary/80 font-medium transition-colors"
+            >
+              {t('common.viewAll')} <ArrowRight className="h-4 w-4" />
+            </Link>
+          </div>
+
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
+            {products.slice(0, 8).map((product) => (
+              <ProductCard
+                key={product.id}
+                product={product}
+                className="animate-fade-in"
+              />
+            ))}
+          </div>
+
+          {/* Mobile View All */}
+          <div className="sm:hidden flex justify-center mt-6">
+            <Link to="/shop">
+              <Button variant="outline" className="gap-2">
+                {t('common.viewAllProducts')} <ArrowRight className="h-4 w-4" />
+              </Button>
+            </Link>
+          </div>
+        </div>
       </div>
-    </section>
+    </section >
   );
 };
 

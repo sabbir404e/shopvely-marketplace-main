@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Trash2, Plus } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
@@ -7,24 +7,57 @@ import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { Separator } from '@/components/ui/separator';
 import { useToast } from "@/components/ui/use-toast";
-import { useSettings } from '@/context/SettingsContext';
+import { useSettings, BannerSlide } from '@/context/SettingsContext';
 import { Textarea } from '@/components/ui/textarea';
 
 const SettingsTab: React.FC = () => {
     const { toast } = useToast();
     const { settings, updateSettings, isLoading } = useSettings();
+    const [formData, setFormData] = useState(settings);
+
+    // Sync formData with settings when settings load or change externally
+    useEffect(() => {
+        setFormData(settings);
+    }, [settings]);
 
     const handleSave = () => {
-        // Since updateSettings persists to localStorage immediately in our context implementation,
-        // we just show the success toast here.
+        updateSettings(formData);
         toast({
             title: "Settings Saved",
             description: "Your store preferences have been updated successfully.",
         });
     };
 
-    const handleChange = (key: keyof typeof settings, value: string | boolean) => {
-        updateSettings({ [key]: value });
+    const handleChange = (key: keyof typeof settings, value: any) => {
+        setFormData(prev => ({ ...prev, [key]: value }));
+    };
+
+    const handleBannerChange = (index: number, key: keyof BannerSlide, value: string) => {
+        const newSlides = formData.bannerSlides.map((slide, i) =>
+            i === index ? { ...slide, [key]: value } : slide
+        );
+        handleChange('bannerSlides', newSlides);
+    };
+
+    const handleAddBanner = () => {
+        const newId = Math.max(0, ...formData.bannerSlides.map(s => s.id)) + 1;
+        const newSlide: BannerSlide = {
+            id: newId,
+            badge: 'New Banner',
+            title: 'Title Here',
+            highlight: 'Highlight',
+            description: 'Banner description goes here.',
+            image: 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=800',
+            discount: '0% OFF',
+            bgClass: 'from-primary/20 via-secondary/30 to-accent/20',
+            category: '',
+        };
+        handleChange('bannerSlides', [...formData.bannerSlides, newSlide]);
+    };
+
+    const handleRemoveBanner = (index: number) => {
+        const newSlides = formData.bannerSlides.filter((_, i) => i !== index);
+        handleChange('bannerSlides', newSlides);
     };
 
     if (isLoading) {
@@ -43,7 +76,7 @@ const SettingsTab: React.FC = () => {
                         <Label htmlFor="storeName">Store Name</Label>
                         <Input
                             id="storeName"
-                            value={settings.storeName}
+                            value={formData.storeName}
                             onChange={(e) => handleChange('storeName', e.target.value)}
                         />
                     </div>
@@ -51,7 +84,7 @@ const SettingsTab: React.FC = () => {
                         <Label htmlFor="supportEmail">Support Email</Label>
                         <Input
                             id="supportEmail"
-                            value={settings.supportEmail}
+                            value={formData.supportEmail}
                             onChange={(e) => handleChange('supportEmail', e.target.value)}
                         />
                     </div>
@@ -61,7 +94,7 @@ const SettingsTab: React.FC = () => {
                             <div className="text-sm text-muted-foreground">Temporarily disable the store for visitors</div>
                         </div>
                         <Switch
-                            checked={settings.maintenanceMode}
+                            checked={formData.maintenanceMode}
                             onCheckedChange={(checked) => handleChange('maintenanceMode', checked)}
                         />
                     </div>
@@ -77,7 +110,7 @@ const SettingsTab: React.FC = () => {
                     <div className="flex items-center justify-between">
                         <Label>New Order Alerts</Label>
                         <Switch
-                            checked={settings.orderAlerts}
+                            checked={formData.orderAlerts}
                             onCheckedChange={(checked) => handleChange('orderAlerts', checked)}
                         />
                     </div>
@@ -85,7 +118,7 @@ const SettingsTab: React.FC = () => {
                     <div className="flex items-center justify-between">
                         <Label>Low Stock Warnings</Label>
                         <Switch
-                            checked={settings.stockWarnings}
+                            checked={formData.stockWarnings}
                             onCheckedChange={(checked) => handleChange('stockWarnings', checked)}
                         />
                     </div>
@@ -93,7 +126,7 @@ const SettingsTab: React.FC = () => {
                     <div className="flex items-center justify-between">
                         <Label>New User Signups</Label>
                         <Switch
-                            checked={settings.newSignups}
+                            checked={formData.newSignups}
                             onCheckedChange={(checked) => handleChange('newSignups', checked)}
                         />
                     </div>
@@ -106,17 +139,14 @@ const SettingsTab: React.FC = () => {
                     <CardDescription>Customize the sliding banners on the home page</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-6">
-                    {settings.bannerSlides?.map((slide, index) => (
+                    {formData.bannerSlides?.map((slide, index) => (
                         <div key={slide.id} className="border p-4 rounded-lg space-y-4 relative">
                             <div className="flex items-center justify-between">
                                 <h4 className="font-semibold">Slide {index + 1}</h4>
                                 <Button
                                     variant="destructive"
                                     size="sm"
-                                    onClick={() => {
-                                        const newSlides = settings.bannerSlides.filter((_, i) => i !== index);
-                                        updateSettings({ bannerSlides: newSlides });
-                                    }}
+                                    onClick={() => handleRemoveBanner(index)}
                                 >
                                     <Trash2 className="h-4 w-4" />
                                 </Button>
@@ -126,66 +156,42 @@ const SettingsTab: React.FC = () => {
                                     <Label>Title</Label>
                                     <Input
                                         value={slide.title}
-                                        onChange={(e) => {
-                                            const newSlides = [...settings.bannerSlides];
-                                            newSlides[index].title = e.target.value;
-                                            updateSettings({ bannerSlides: newSlides });
-                                        }}
+                                        onChange={(e) => handleBannerChange(index, 'title', e.target.value)}
                                     />
                                 </div>
                                 <div className="space-y-2">
                                     <Label>Highlight Text</Label>
                                     <Input
                                         value={slide.highlight}
-                                        onChange={(e) => {
-                                            const newSlides = [...settings.bannerSlides];
-                                            newSlides[index].highlight = e.target.value;
-                                            updateSettings({ bannerSlides: newSlides });
-                                        }}
+                                        onChange={(e) => handleBannerChange(index, 'highlight', e.target.value)}
                                     />
                                 </div>
                                 <div className="space-y-2 col-span-2">
                                     <Label>Description</Label>
                                     <Textarea
                                         value={slide.description}
-                                        onChange={(e) => {
-                                            const newSlides = [...settings.bannerSlides];
-                                            newSlides[index].description = e.target.value;
-                                            updateSettings({ bannerSlides: newSlides });
-                                        }}
+                                        onChange={(e) => handleBannerChange(index, 'description', e.target.value)}
                                     />
                                 </div>
                                 <div className="space-y-2">
                                     <Label>Badge Text</Label>
                                     <Input
                                         value={slide.badge}
-                                        onChange={(e) => {
-                                            const newSlides = [...settings.bannerSlides];
-                                            newSlides[index].badge = e.target.value;
-                                            updateSettings({ bannerSlides: newSlides });
-                                        }}
+                                        onChange={(e) => handleBannerChange(index, 'badge', e.target.value)}
                                     />
                                 </div>
                                 <div className="space-y-2">
                                     <Label>Discount Text</Label>
                                     <Input
                                         value={slide.discount}
-                                        onChange={(e) => {
-                                            const newSlides = [...settings.bannerSlides];
-                                            newSlides[index].discount = e.target.value;
-                                            updateSettings({ bannerSlides: newSlides });
-                                        }}
+                                        onChange={(e) => handleBannerChange(index, 'discount', e.target.value)}
                                     />
                                 </div>
                                 <div className="space-y-2 col-span-2">
                                     <Label>Image URL</Label>
                                     <Input
                                         value={slide.image}
-                                        onChange={(e) => {
-                                            const newSlides = [...settings.bannerSlides];
-                                            newSlides[index].image = e.target.value;
-                                            updateSettings({ bannerSlides: newSlides });
-                                        }}
+                                        onChange={(e) => handleBannerChange(index, 'image', e.target.value)}
                                     />
                                 </div>
                                 <div className="space-y-2">
@@ -193,11 +199,7 @@ const SettingsTab: React.FC = () => {
                                     <select
                                         className="w-full px-3 py-2 border border-border rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20"
                                         value={slide.category || ''}
-                                        onChange={(e) => {
-                                            const newSlides = [...settings.bannerSlides];
-                                            newSlides[index].category = e.target.value;
-                                            updateSettings({ bannerSlides: newSlides });
-                                        }}
+                                        onChange={(e) => handleBannerChange(index, 'category', e.target.value)}
                                     >
                                         <option value="">All Products</option>
                                         <option value="electronics">Electronics</option>
@@ -213,25 +215,11 @@ const SettingsTab: React.FC = () => {
                         </div>
                     ))}
 
-                    {(!settings.bannerSlides || settings.bannerSlides.length < 6) && (
+                    {(!formData.bannerSlides || formData.bannerSlides.length < 10) && (
                         <Button
                             variant="outline"
                             className="w-full border-dashed"
-                            onClick={() => {
-                                const newId = Math.max(0, ...settings.bannerSlides.map(s => s.id)) + 1;
-                                const newSlide = {
-                                    id: newId,
-                                    badge: 'New Banner',
-                                    title: 'Title Here',
-                                    highlight: 'Highlight',
-                                    description: 'Banner description goes here.',
-                                    image: 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=800',
-                                    discount: '0% OFF',
-                                    bgClass: 'from-primary/20 via-secondary/30 to-accent/20',
-                                    category: '',
-                                };
-                                updateSettings({ bannerSlides: [...settings.bannerSlides, newSlide] });
-                            }}
+                            onClick={handleAddBanner}
                         >
                             <Plus className="mr-2 h-4 w-4" /> Add Banner
                         </Button>

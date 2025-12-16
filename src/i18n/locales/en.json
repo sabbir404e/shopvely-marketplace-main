@@ -54,7 +54,8 @@
     "topDeals": "Top Deals",
     "bestSellers": "Best sellers this week",
     "newArrivals": "New Arrivals",
-    "freshAdditions": "Fresh additions to our collection"
+    "freshAdditions": "Fresh additions to our collection",
+    "allProducts": "All Products"
   },
   "product": {
     "addToCart": "Add to Cart",
@@ -217,12 +218,12 @@
   },
   "about": {
     "title": "About",
-    "subtitle": "Your trusted destination for quality products at amazing prices. We're on a mission to make online shopping lovely.",
+    "subtitle": "Your trusted destination for quality products at amazing prices. We're on a mission to make online shopping lovely.\n\nShopvely — where every shopping moment feels lovely.",
     "story": {
       "label": "Our Story",
       "title": "Shop Smart, Shop Lovely",
-      "p1": "Founded in 2020, ShopVely began with a simple idea: make quality products accessible to everyone. What started as a small online store has grown into one of Bangladesh's most trusted e-commerce platforms.",
-      "p2": "We believe shopping should be an enjoyable experience. That's why we curate the best products, offer competitive prices, and provide exceptional customer service every step of the way.",
+      "p1": "Shopvely is more than just an online store—it’s a place where shopping feels simple, beautiful, and enjoyable.\nWe believe shopping is not only about buying products; it’s about the experience and the feeling that comes with it.\n\nAt Shopvely, every product is carefully selected with quality, value, and trust in mind. Our goal is to make every purchase smooth, satisfying, and filled with a lovely experience.",
+      "p2": "From product selection to delivery, we focus on creating a platform where customers feel confident, happy, and valued.\nThat’s why Shopvely stands for quality, convenience, and a lovely way to shop.\n\nWe believe shopping should be an enjoyable experience. That's why we curate the best products, offer competitive prices, and provide exceptional customer service every step of the way.",
       "customerFocused": "Customer Focused",
       "communityDriven": "Community Driven",
       "yearsExcellence": "Years of Excellence"

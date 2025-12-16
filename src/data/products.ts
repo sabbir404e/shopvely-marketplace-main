@@ -201,7 +201,7 @@ export const products: Product[] = [
     price: 1299,
     originalPrice: 1599,
     discount: 19,
-    images: ['https://images.unsplash.com/photo-1520903920248-0c4a1637c35e?w=600'],
+    images: ['https://images.unsplash.com/photo-1520903920248-0c4a1637c35e?w=800&auto=format&fit=crop'],
     category: 'Sessional Products',
     brand: 'WinterWarm',
     rating: 4.8,
