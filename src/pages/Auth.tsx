@@ -20,22 +20,10 @@ import { Eye, EyeOff, Loader2, ArrowLeft } from 'lucide-react';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 
-const loginSchema = z.object({
-  email: z.string().email('Please enter a valid email address'),
-  password: z.string().min(6, 'Password must be at least 6 characters')
-});
-
-const signupSchema = z.object({
-  fullName: z.string().min(2, 'Name must be at least 2 characters').max(100, 'Name is too long'),
-  email: z.string().email('Please enter a valid email address'),
-  password: z.string().min(6, 'Password must be at least 6 characters'),
-  confirmPassword: z.string()
-}).refine((data) => data.password === data.confirmPassword, {
-  message: "Passwords don't match",
-  path: ["confirmPassword"]
-});
+import { useTranslation } from 'react-i18next';
 
 const Auth: React.FC = () => {
+  const { t } = useTranslation();
   const [isLogin, setIsLogin] = useState(true);
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -55,12 +43,28 @@ const Auth: React.FC = () => {
   const [resetEmail, setResetEmail] = useState('');
   const [isResetLoading, setIsResetLoading] = useState(false);
 
+  // Schema defined inside component to use translations
+  const loginSchema = z.object({
+    email: z.string().email(t('auth.validation.validEmail')),
+    password: z.string().min(6, t('auth.validation.passwordLength'))
+  });
+
+  const signupSchema = z.object({
+    fullName: z.string().min(2, t('auth.validation.nameLength')).max(100, t('auth.validation.nameTooLong')),
+    email: z.string().email(t('auth.validation.validEmail')),
+    password: z.string().min(6, t('auth.validation.passwordLength')),
+    confirmPassword: z.string()
+  }).refine((data) => data.password === data.confirmPassword, {
+    message: t('auth.validation.passwordMismatch'),
+    path: ["confirmPassword"]
+  });
+
   const handleResetPassword = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!resetEmail) {
       toast({
-        title: "Error",
-        description: "Please enter your email address",
+        title: t('review.error'),
+        description: t('auth.validation.validEmail'),
         variant: "destructive"
       });
       return;
@@ -71,7 +75,7 @@ const Auth: React.FC = () => {
       const { error } = await resetPassword(resetEmail);
       if (error) {
         toast({
-          title: "Error",
+          title: t('review.error'),
           description: error.message,
           variant: "destructive"
         });
@@ -85,7 +89,7 @@ const Auth: React.FC = () => {
       }
     } catch (error) {
       toast({
-        title: "Error",
+        title: t('review.error'),
         description: "Something went wrong",
         variant: "destructive"
       });
@@ -151,7 +155,7 @@ const Auth: React.FC = () => {
           }
         } else {
           toast({
-            title: "Welcome back!",
+            title: t('auth.loginTitle'),
             description: "You have successfully logged in."
           });
           navigate('/');
@@ -191,13 +195,13 @@ const Auth: React.FC = () => {
         } else {
           toast({
             title: "Account created!",
-            description: "Please check your email to verify your account. You may need to disable 'Confirm email' in Supabase for faster testing."
+            description: "Please check your email to verify your account."
           });
         }
       }
     } catch (error) {
       toast({
-        title: "Error",
+        title: t('review.error'),
         description: "Something went wrong. Please try again.",
         variant: "destructive"
       });
@@ -240,22 +244,22 @@ const Auth: React.FC = () => {
           <CardHeader className="space-y-1 text-center">
             <Link to="/" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-primary mb-4 self-start">
               <ArrowLeft className="h-4 w-4" />
-              Back to Home
+              {t('auth.backToHome')}
             </Link>
             <CardTitle className="text-2xl font-bold">
-              {isLogin ? 'Welcome Back' : 'Create Account'}
+              {isLogin ? t('auth.loginTitle') : t('auth.signupTitle')}
             </CardTitle>
             <CardDescription>
               {isLogin
-                ? 'Enter your credentials to access your account'
-                : 'Fill in your details to get started'}
+                ? t('auth.enterCredentials')
+                : t('auth.fillDetails')}
             </CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
               {!isLogin && (
                 <div className="space-y-2">
-                  <Label htmlFor="fullName">Full Name</Label>
+                  <Label htmlFor="fullName">{t('auth.fullName')}</Label>
                   <Input
                     id="fullName"
                     name="fullName"
@@ -271,7 +275,7 @@ const Auth: React.FC = () => {
               )}
 
               <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
+                <Label htmlFor="email">{t('auth.email')}</Label>
                 <Input
                   id="email"
                   name="email"
@@ -287,7 +291,7 @@ const Auth: React.FC = () => {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="password">Password</Label>
+                <Label htmlFor="password">{t('auth.password')}</Label>
                 <div className="relative">
                   <Input
                     id="password"
@@ -316,7 +320,7 @@ const Auth: React.FC = () => {
                       onClick={() => setIsResetOpen(true)}
                       className="text-sm text-primary hover:underline"
                     >
-                      Forgot password?
+                      {t('auth.forgotPassword')}
                     </button>
                   </div>
                 )}
@@ -324,7 +328,7 @@ const Auth: React.FC = () => {
 
               {!isLogin && (
                 <div className="space-y-2">
-                  <Label htmlFor="confirmPassword">Confirm Password</Label>
+                  <Label htmlFor="confirmPassword">{t('auth.confirmPassword')}</Label>
                   <Input
                     id="confirmPassword"
                     name="confirmPassword"
@@ -342,7 +346,7 @@ const Auth: React.FC = () => {
 
               <Button type="submit" className="w-full btn-primary" disabled={isLoading}>
                 {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                {isLogin ? 'Sign In' : 'Create Account'}
+                {isLogin ? t('auth.loginButton') : t('auth.signupButton')}
               </Button>
             </form>
 
@@ -351,7 +355,7 @@ const Auth: React.FC = () => {
                 <span className="w-full border-t" />
               </div>
               <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-background px-2 text-muted-foreground">Or continue with</span>
+                <span className="bg-background px-2 text-muted-foreground">{t('auth.orContinue')}</span>
               </div>
             </div>
 
@@ -362,7 +366,7 @@ const Auth: React.FC = () => {
                   alt="Google"
                   className="w-5 h-5 mr-2 absolute left-4"
                 />
-                Continue with Google
+                {t('auth.continueGoogle')}
               </Button>
               <Button variant="outline" type="button" onClick={handleFacebookLogin} className="w-full relative">
                 <img
@@ -370,13 +374,13 @@ const Auth: React.FC = () => {
                   alt="Facebook"
                   className="w-5 h-5 mr-2 absolute left-4"
                 />
-                Continue with Facebook
+                {t('auth.continueFacebook')}
               </Button>
             </div>
 
             <div className="mt-6 text-center">
               <p className="text-sm text-muted-foreground">
-                {isLogin ? "Don't have an account?" : "Already have an account?"}
+                {isLogin ? t('auth.noAccount') : t('auth.haveAccount')}
                 <button
                   type="button"
                   onClick={() => {
@@ -386,7 +390,7 @@ const Auth: React.FC = () => {
                   }}
                   className="ml-1 text-primary hover:underline font-medium"
                 >
-                  {isLogin ? 'Sign Up' : 'Sign In'}
+                  {isLogin ? t('auth.signupButton') : t('auth.loginButton')}
                 </button>
               </p>
             </div>
@@ -396,14 +400,14 @@ const Auth: React.FC = () => {
         <Dialog open={isResetOpen} onOpenChange={setIsResetOpen}>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Reset Password</DialogTitle>
+              <DialogTitle>{t('auth.resetPasswordTitle')}</DialogTitle>
               <DialogDescription>
-                Enter your email address and we'll send you a link to reset your password.
+                {t('auth.resetPasswordDesc')}
               </DialogDescription>
             </DialogHeader>
             <form onSubmit={handleResetPassword} className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="reset-email">Email</Label>
+                <Label htmlFor="reset-email">{t('auth.email')}</Label>
                 <Input
                   id="reset-email"
                   type="email"
@@ -415,11 +419,11 @@ const Auth: React.FC = () => {
               </div>
               <DialogFooter>
                 <Button type="button" variant="outline" onClick={() => setIsResetOpen(false)} disabled={isResetLoading}>
-                  Cancel
+                  {t('common.cancel')}
                 </Button>
                 <Button type="submit" disabled={isResetLoading}>
                   {isResetLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                  Send Reset Link
+                  {t('auth.sendResetLink')}
                 </Button>
               </DialogFooter>
             </form>

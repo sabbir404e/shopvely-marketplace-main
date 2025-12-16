@@ -153,7 +153,23 @@
     "noAccount": "Don't have an account?",
     "haveAccount": "Already have an account?",
     "loginButton": "Login",
-    "signupButton": "Sign Up"
+    "signupButton": "Sign Up",
+    "backToHome": "Back to Home",
+    "enterCredentials": "Enter your credentials to access your account",
+    "fillDetails": "Fill in your details to get started",
+    "orContinue": "Or continue with",
+    "continueGoogle": "Continue with Google",
+    "continueFacebook": "Continue with Facebook",
+    "resetPasswordTitle": "Reset Password",
+    "resetPasswordDesc": "Enter your email address and we'll send you a link to reset your password.",
+    "sendResetLink": "Send Reset Link",
+    "validation": {
+      "validEmail": "Please enter a valid email address",
+      "passwordLength": "Password must be at least 6 characters",
+      "nameLength": "Name must be at least 2 characters",
+      "nameTooLong": "Name is too long",
+      "passwordMismatch": "Passwords don't match"
+    }
   },
   "footer": {
     "tagline": "Smart shopping, beautiful shopping. Your one-stop destination for quality products at great prices.",
