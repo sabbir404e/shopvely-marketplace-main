@@ -16,6 +16,7 @@ const STORAGE_KEY = 'shopvely_products_v2';
 
 export const ProductProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const [products, setProducts] = useState<Product[]>([]);
+    const [isInitialized, setIsInitialized] = useState(false);
 
     useEffect(() => {
         const storedProducts = localStorage.getItem(STORAGE_KEY);
@@ -29,13 +30,14 @@ export const ProductProvider: React.FC<{ children: React.ReactNode }> = ({ child
         } else {
             setProducts(initialProducts);
         }
+        setIsInitialized(true);
     }, []);
 
     useEffect(() => {
-        if (products.length > 0) {
+        if (isInitialized) {
             localStorage.setItem(STORAGE_KEY, JSON.stringify(products));
         }
-    }, [products]);
+    }, [products, isInitialized]);
 
     const addProduct = (product: Product) => {
         setProducts(prev => [product, ...prev]);

@@ -10,6 +10,8 @@ import abdulWadudImage from '@/assets/team/abdul_wadud.jpg';
 import sabbirHossainImage from '@/assets/team/sabbir_hossain.jpg';
 import abuSayeedImage from '@/assets/team/abu_sayeed_v2.jpg';
 import tusarAhmedNayeemImage from '@/assets/team/tusar_ahmed_nayeem.jpg';
+import shariarHossainSunImage from '@/assets/team/shariar_hossain_sun.png';
+import mdAzomHossainImage from '@/assets/team/md_azom_hossain.png';
 
 const About: React.FC = () => {
   const { t } = useTranslation();
@@ -45,10 +47,61 @@ const About: React.FC = () => {
   ];
 
   const team = [
-    { name: 'Abdul Wadud', role: t('about.team.roles.ceo'), image: abdulWadudImage },
-    { name: 'Md. Sabbir Hossain', role: t('about.team.roles.cto'), image: sabbirHossainImage },
-    { name: 'Md. Abu Sayeed', role: t('about.team.roles.marketing'), image: abuSayeedImage },
-    { name: 'Tusar Ahmed Nayeem', role: t('about.team.roles.marketingExecutive'), image: tusarAhmedNayeemImage },
+    {
+      name: 'Abdul Wadud',
+      role: t('about.team.roles.ceo'),
+      image: abdulWadudImage,
+      details: [
+        'Marketing Executive at Sun Power Ceramics, Dhaka',
+        'Graduated with a BBA in Management from Rajshahi College, Rajshahi',
+        'Contact 01796952446'
+      ]
+    },
+    {
+      name: 'Md. Sabbir Hossain',
+      role: t('about.team.roles.cto'),
+      image: sabbirHossainImage,
+      details: [
+        'Studying CSE at Pabna University of Science and Technology, Pabna',
+        'Contact 01786981164'
+      ]
+    },
+    {
+      name: 'Md. Abu Sayeed',
+      role: t('about.team.roles.marketing'),
+      image: abuSayeedImage,
+      details: [
+        'Studying Islamic History at New Government Degree College, Rajshahi',
+        'Contact 0 1317445169'
+      ]
+    },
+    {
+      name: 'Tusar Ahmed Nayeem',
+      role: t('about.team.roles.marketingExecutive'),
+      image: tusarAhmedNayeemImage,
+      details: [
+        'Studying Chemistry at Jagannath University, Dhaka',
+        'Contact 01859861241'
+      ]
+    },
+    {
+      name: 'Shariar Hossain Sun',
+      role: t('about.team.roles.marketingExecutive'),
+      image: shariarHossainSunImage,
+      details: [
+        'Studying Diploma in Electrical Engineering at Chapainawabganj Polytechnic Institute, Chapainawabganj',
+        'Contact 01317448654'
+      ]
+    },
+    {
+      name: 'Md. Azom Hossain Babul',
+      role: t('about.team.roles.marketingExecutive'),
+      image: mdAzomHossainImage,
+      details: [
+        'Studying Diploma in Civil Engineering at Bogura Polytechnic Institute, Bogura',
+        'Contact 01744945758'
+      ]
+    },
   ];
 
   return (
@@ -163,7 +216,11 @@ const About: React.FC = () => {
                     className="w-32 h-32 rounded-full mx-auto mb-4 object-cover border-4 border-card shadow-lg"
                   />
                   <h3 className="font-bold text-foreground">{member.name}</h3>
-                  <p className="text-muted-foreground text-sm">{member.role}</p>
+                  <p className="text-muted-foreground text-sm mb-2">{member.role}</p>
+                  {/* @ts-ignore */}
+                  {member.details && member.details.map((detail, i) => (
+                    <p key={i} className="text-muted-foreground text-xs mt-1">{detail}</p>
+                  ))}
                 </div>
               ))}
             </div>

@@ -166,7 +166,7 @@
     "validation": {
       "validEmail": "Please enter a valid email address",
       "passwordLength": "Password must be at least 6 characters",
-      "nameLength": "Name must be at least 2 characters",
+      "nameLength": "Name must be at least 3 characters",
       "nameTooLong": "Name is too long",
       "passwordMismatch": "Passwords don't match"
     }
