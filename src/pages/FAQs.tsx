@@ -5,6 +5,8 @@ import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import { cn } from '@/lib/utils';
 
+import { useLocation } from 'react-router-dom';
+
 interface FAQItem {
     question: string;
     answer: string;
@@ -13,8 +15,18 @@ interface FAQItem {
 
 const FAQs: React.FC = () => {
     const { t } = useTranslation();
+    const location = useLocation();
     const [openIndex, setOpenIndex] = useState<number | null>(null);
     const [activeCategory, setActiveCategory] = useState<string>('all');
+
+    React.useEffect(() => {
+        if (location.hash) {
+            const element = document.querySelector(location.hash);
+            if (element) {
+                element.scrollIntoView({ behavior: 'smooth' });
+            }
+        }
+    }, [location]);
 
     const faqs: FAQItem[] = [
         // Shipping & Delivery
@@ -57,7 +69,7 @@ const FAQs: React.FC = () => {
 
             <main className="flex-1">
                 {/* Hero */}
-                <section className="bg-gradient-hero py-12 lg:py-20">
+                <section id="faq-hero" className="bg-gradient-hero py-12 lg:py-20 scroll-mt-24">
                     <div className="container-main text-center">
                         <div className="inline-flex items-center justify-center p-3 bg-primary/10 rounded-full mb-4">
                             <HelpCircle className="h-8 w-8 text-primary" />

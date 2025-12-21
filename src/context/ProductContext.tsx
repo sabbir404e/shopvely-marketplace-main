@@ -12,7 +12,7 @@ interface ProductContextType {
 
 const ProductContext = createContext<ProductContextType | undefined>(undefined);
 
-const STORAGE_KEY = 'shopvely_products_v2';
+const STORAGE_KEY = 'shopvely_products_v3';
 
 export const ProductProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const [products, setProducts] = useState<Product[]>([]);

@@ -8,8 +8,11 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { toast } from '@/hooks/use-toast';
 
+import { useLocation } from 'react-router-dom';
+
 const Contact: React.FC = () => {
   const { t } = useTranslation();
+  const location = useLocation();
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -17,6 +20,15 @@ const Contact: React.FC = () => {
     message: '',
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  React.useEffect(() => {
+    if (location.hash) {
+      const element = document.querySelector(location.hash);
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth' });
+      }
+    }
+  }, [location]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }));
@@ -60,7 +72,7 @@ const Contact: React.FC = () => {
 
       <main className="flex-1">
         {/* Hero */}
-        <section className="bg-gradient-hero py-12 lg:py-20">
+        <section id="get-in-touch" className="bg-gradient-hero py-12 lg:py-20 scroll-mt-24">
           <div className="container-main text-center">
             <h1 className="text-3xl lg:text-5xl font-extrabold text-secondary-foreground mb-4">
               {t('contact.hero.title')}
@@ -95,7 +107,7 @@ const Contact: React.FC = () => {
         </section>
 
         {/* Contact Form */}
-        <section className="py-12 lg:py-16">
+        <section id="contact-form" className="py-12 lg:py-16 scroll-mt-24">
           <div className="container-main">
             <div className="max-w-2xl mx-auto">
               {/* Form */}

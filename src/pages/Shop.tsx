@@ -1,17 +1,28 @@
 import React, { useState, useMemo } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams, useLocation } from 'react-router-dom';
 import { Grid3X3, LayoutGrid } from 'lucide-react';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import ProductCard from '@/components/ui/ProductCard';
 import { Button } from '@/components/ui/button';
 import { useProducts } from '@/context/ProductContext';
+import { categories } from '@/data/products';
 import { cn } from '@/lib/utils';
 
 const Shop: React.FC = () => {
   const { products } = useProducts();
   const [searchParams] = useSearchParams();
+  const location = useLocation();
   const [sortBy, setSortBy] = useState('popular');
+
+  React.useEffect(() => {
+    if (location.hash) {
+      const element = document.querySelector(location.hash);
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth' });
+      }
+    }
+  }, [location]);
   const [gridCols, setGridCols] = useState<'grid-2' | 'grid-3'>('grid-3');
 
   const searchQuery = searchParams.get('search') || '';
@@ -32,9 +43,13 @@ const Shop: React.FC = () => {
 
     // Category from URL param
     if (categoryParam) {
+      const matchedCategory = categories.find(c => c.slug === categoryParam);
+      const categoryName = matchedCategory ? matchedCategory.name.toLowerCase() : categoryParam.toLowerCase();
+
       result = result.filter(p =>
-        p.category.toLowerCase().replace(' ', '-') === categoryParam ||
-        p.category.toLowerCase() === categoryParam
+        p.category.toLowerCase() === categoryName ||
+        p.category.toLowerCase().replace(/\s+/g, '-') === categoryParam ||
+        p.category.toLowerCase().replace(' ', '-') === categoryParam // legacy fallback
       );
     }
 
@@ -53,9 +68,16 @@ const Shop: React.FC = () => {
       default:
         result.sort((a, b) => b.reviewCount - a.reviewCount);
     }
-
     return result;
   }, [products, searchQuery, categoryParam, sortBy]);
+
+  const displayCategoryName = useMemo(() => {
+    if (!categoryParam) return '';
+    const matched = categories.find(c => c.slug === categoryParam);
+    if (matched) return matched.name;
+    if (categoryParam.toLowerCase() === 'beauty') return 'Beauty & Jewelry';
+    return categoryParam.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+  }, [categoryParam]);
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
@@ -64,13 +86,13 @@ const Shop: React.FC = () => {
       <main className="flex-1">
         <div className="container-main py-6 lg:py-8">
           {/* Breadcrumb */}
-          <div className="mb-6">
+          <div id="shop-hero" className="mb-6 scroll-mt-24">
             <nav className="text-sm text-muted-foreground">
               <span>Home</span> / <span className="text-foreground">Shop</span>
-              {categoryParam && <> / <span className="text-foreground capitalize">{categoryParam.replace('-', ' ')}</span></>}
+              {categoryParam && <> / <span className="text-foreground">{displayCategoryName}</span></>}
             </nav>
             <h1 className="text-2xl lg:text-3xl font-bold text-foreground mt-2">
-              {searchQuery ? `Results for "${searchQuery}"` : categoryParam ? `${categoryParam.replace('-', ' ')}` : 'All Products'}
+              {searchQuery ? `Results for "${searchQuery}"` : (categoryParam ? displayCategoryName : 'All Products')}
             </h1>
             <p className="text-muted-foreground mt-1">{filteredProducts.length} products found</p>
           </div>

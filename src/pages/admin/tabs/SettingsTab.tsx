@@ -205,10 +205,11 @@ const SettingsTab: React.FC = () => {
                                         <option value="electronics">Electronics</option>
                                         <option value="fashion">Fashion</option>
                                         <option value="home-living">Home & Living</option>
-                                        <option value="beauty">Beauty</option>
+                                        <option value="beauty-jewelry">Beauty & Jewelry</option>
                                         <option value="sports">Sports</option>
                                         <option value="books">Books</option>
                                         <option value="sessional-products">Sessional Products</option>
+                                        <option value="kids-item">Kids Item</option>
                                     </select>
                                 </div>
                             </div>

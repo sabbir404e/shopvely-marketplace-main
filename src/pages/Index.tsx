@@ -6,13 +6,28 @@ import HeroSection from '@/components/home/HeroSection';
 import CategorySection from '@/components/home/CategorySection';
 import FeaturedProducts from '@/components/home/FeaturedProducts';
 
+import { useLocation } from 'react-router-dom';
+
 const Index: React.FC = () => {
   const { t } = useTranslation();
+  const location = useLocation();
+
+  React.useEffect(() => {
+    if (location.hash) {
+      const element = document.querySelector(location.hash);
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth' });
+      }
+    }
+  }, [location]);
+
   return (
     <div className="min-h-screen flex flex-col">
       <Header />
       <main className="flex-1">
-        <HeroSection />
+        <div id="home-hero" className="scroll-mt-24">
+          <HeroSection />
+        </div>
         <CategorySection />
         <FeaturedProducts />
 

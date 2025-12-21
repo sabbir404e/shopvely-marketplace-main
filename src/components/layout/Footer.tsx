@@ -73,27 +73,27 @@ const Footer: React.FC = () => {
             <h4 className="font-bold mb-4">{t('footer.quickLinks')}</h4>
             <ul className="space-y-2">
               <li>
-                <Link to="/" className="text-secondary-foreground/70 hover:text-primary text-sm transition-colors">
+                <Link to="/#home-hero" className="text-secondary-foreground/70 hover:text-primary text-sm transition-colors">
                   {t('common.home')}
                 </Link>
               </li>
               <li>
-                <Link to="/shop" className="text-secondary-foreground/70 hover:text-primary text-sm transition-colors">
+                <Link to="/shop#shop-hero" className="text-secondary-foreground/70 hover:text-primary text-sm transition-colors">
                   {t('common.shop')}
                 </Link>
               </li>
               <li>
-                <Link to="/about" className="text-secondary-foreground/70 hover:text-primary text-sm transition-colors">
+                <Link to="/about#about-shopvely" className="text-secondary-foreground/70 hover:text-primary text-sm transition-colors">
                   {t('common.about')}
                 </Link>
               </li>
               <li>
-                <Link to="/contact" className="text-secondary-foreground/70 hover:text-primary text-sm transition-colors">
+                <Link to="/contact#get-in-touch" className="text-secondary-foreground/70 hover:text-primary text-sm transition-colors">
                   {t('common.contact')}
                 </Link>
               </li>
               <li>
-                <Link to="/faqs" className="text-secondary-foreground/70 hover:text-primary text-sm transition-colors">
+                <Link to="/faqs#faq-hero" className="text-secondary-foreground/70 hover:text-primary text-sm transition-colors">
                   {t('footer.faq')}
                 </Link>
               </li>
@@ -105,22 +105,22 @@ const Footer: React.FC = () => {
             <h4 className="font-bold mb-4">{t('footer.customerService')}</h4>
             <ul className="space-y-2">
               <li>
-                <Link to="/shipping-policy" className="text-secondary-foreground/70 hover:text-primary text-sm transition-colors">
+                <Link to="/shipping-policy#shipping-policy-hero" className="text-secondary-foreground/70 hover:text-primary text-sm transition-colors">
                   {t('footer.shippingPolicy')}
                 </Link>
               </li>
               <li>
-                <Link to="/return-policy" className="text-secondary-foreground/70 hover:text-primary text-sm transition-colors">
+                <Link to="/return-policy#return-policy-hero" className="text-secondary-foreground/70 hover:text-primary text-sm transition-colors">
                   {t('footer.returnPolicy')}
                 </Link>
               </li>
               <li>
-                <Link to="/privacy-policy" className="text-secondary-foreground/70 hover:text-primary text-sm transition-colors">
+                <Link to="/privacy-policy#privacy-policy-hero" className="text-secondary-foreground/70 hover:text-primary text-sm transition-colors">
                   {t('footer.privacyPolicy')}
                 </Link>
               </li>
               <li>
-                <Link to="/terms" className="text-secondary-foreground/70 hover:text-primary text-sm transition-colors">
+                <Link to="/terms#terms-hero" className="text-secondary-foreground/70 hover:text-primary text-sm transition-colors">
                   {t('footer.termsConditions')}
                 </Link>
               </li>

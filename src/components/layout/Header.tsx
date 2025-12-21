@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import {
   Search, ShoppingCart, Heart, User, Menu, X, LogOut, Shield, ChevronDown,
-  Smartphone, Shirt, Home, Sparkles, Dumbbell, BookOpen, Gift, LayoutGrid, Globe, Check
+  Smartphone, Shirt, Home, Sparkles, Dumbbell, BookOpen, Gift, LayoutGrid, Globe, Check, Baby
 } from 'lucide-react';
 import { categories as baseCategories } from '@/data/products';
 import { useProducts } from '@/context/ProductContext';
@@ -76,10 +76,12 @@ const Header: React.FC = () => {
     'electronics': <Smartphone className="h-4 w-4" />,
     'fashion': <Shirt className="h-4 w-4" />,
     'home-living': <Home className="h-4 w-4" />,
+    'beauty-jewelry': <Sparkles className="h-4 w-4" />,
     'beauty': <Sparkles className="h-4 w-4" />,
     'sports': <Dumbbell className="h-4 w-4" />,
     'books': <BookOpen className="h-4 w-4" />,
     'sessional-products': <Gift className="h-4 w-4" />,
+    'kids-item': <Baby className="h-4 w-4" />,
   };
 
   return (

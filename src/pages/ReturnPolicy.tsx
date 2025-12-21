@@ -5,8 +5,20 @@ import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import { Link } from 'react-router-dom';
 
+import { useLocation } from 'react-router-dom';
+
 const ReturnPolicy: React.FC = () => {
     const { t } = useTranslation();
+    const location = useLocation();
+
+    React.useEffect(() => {
+        if (location.hash) {
+            const element = document.querySelector(location.hash);
+            if (element) {
+                element.scrollIntoView({ behavior: 'smooth' });
+            }
+        }
+    }, [location]);
 
     return (
         <div className="min-h-screen flex flex-col bg-background">
@@ -14,7 +26,7 @@ const ReturnPolicy: React.FC = () => {
 
             <main className="flex-1">
                 {/* Hero */}
-                <section className="bg-gradient-hero py-12 lg:py-20">
+                <section id="return-policy-hero" className="bg-gradient-hero py-12 lg:py-20 scroll-mt-24">
                     <div className="container-main text-center">
                         <div className="inline-flex items-center justify-center p-3 bg-primary/10 rounded-full mb-4">
                             <RotateCcw className="h-8 w-8 text-primary" />

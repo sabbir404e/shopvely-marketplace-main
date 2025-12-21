@@ -13,8 +13,20 @@ import tusarAhmedNayeemImage from '@/assets/team/tusar_ahmed_nayeem.jpg';
 import shariarHossainSunImage from '@/assets/team/shariar_hossain_sun.png';
 import mdAzomHossainImage from '@/assets/team/md_azom_hossain.png';
 
+import { useLocation } from 'react-router-dom';
+
 const About: React.FC = () => {
   const { t } = useTranslation();
+  const location = useLocation();
+
+  React.useEffect(() => {
+    if (location.hash) {
+      const element = document.querySelector(location.hash);
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth' });
+      }
+    }
+  }, [location]);
 
   const values = [
     {
@@ -52,8 +64,7 @@ const About: React.FC = () => {
       role: t('about.team.roles.ceo'),
       image: abdulWadudImage,
       details: [
-        'Marketing Executive at Sun Power Ceramics, Dhaka',
-        'Graduated with a BBA in Management from Rajshahi College, Rajshahi',
+        'Bachelor Degree & Post Graduation Completed from Rajshahi College, Department of Management, Rajshahi',
         'Contact 01796952446'
       ]
     },
@@ -122,7 +133,7 @@ const About: React.FC = () => {
         </section>
 
         {/* Story */}
-        <section className="py-12 lg:py-16">
+        <section id="about-shopvely" className="py-12 lg:py-16 scroll-mt-24">
           <div className="container-main">
             <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-center">
               <div>

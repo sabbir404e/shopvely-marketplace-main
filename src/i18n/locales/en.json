@@ -37,10 +37,12 @@
     "electronics": "Electronics",
     "fashion": "Fashion",
     "home-living": "Home & Living",
-    "beauty": "Beauty",
+    "beauty-jewelry": "Beauty & Jewelry",
+    "beauty": "Beauty & Jewelry",
     "sports": "Sports",
     "books": "Books",
-    "sessional-products": "Sessional Products"
+    "sessional-products": "Sessional Products",
+    "kids-item": "Kids Item"
   },
   "hero": {
     "shopNow": "Shop Now",
@@ -274,7 +276,7 @@
       "label": "Meet Our Team",
       "title": "The People Behind ShopVely",
       "roles": {
-        "ceo": "Co-Founder & CEO",
+        "ceo": "Founder & CEO",
         "cto": "Founder & CTO",
         "marketing": "Marketing Executive",
         "marketingExecutive": "Marketing Executive"

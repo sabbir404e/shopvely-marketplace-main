@@ -5,8 +5,20 @@ import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import { Link } from 'react-router-dom';
 
+import { useLocation } from 'react-router-dom';
+
 const ShippingPolicy: React.FC = () => {
     const { t } = useTranslation();
+    const location = useLocation();
+
+    React.useEffect(() => {
+        if (location.hash) {
+            const element = document.querySelector(location.hash);
+            if (element) {
+                element.scrollIntoView({ behavior: 'smooth' });
+            }
+        }
+    }, [location]);
 
     const shippingInfo = [
         {
@@ -37,7 +49,7 @@ const ShippingPolicy: React.FC = () => {
 
             <main className="flex-1">
                 {/* Hero */}
-                <section className="bg-gradient-hero py-12 lg:py-20">
+                <section id="shipping-policy-hero" className="bg-gradient-hero py-12 lg:py-20 scroll-mt-24">
                     <div className="container-main text-center">
                         <div className="inline-flex items-center justify-center p-3 bg-primary/10 rounded-full mb-4">
                             <Truck className="h-8 w-8 text-primary" />
