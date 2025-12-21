@@ -9,6 +9,7 @@ interface Profile {
   avatar_url: string | null;
   loyalty_points: number;
   referral_code: string | null;
+  referred_by_user_id: string | null;
 }
 
 interface AuthContextType {
@@ -16,8 +17,9 @@ interface AuthContextType {
   session: Session | null;
   profile: Profile | null;
   isAdmin: boolean;
+  userRole: 'admin' | 'manager' | 'customer' | null;
   loading: boolean;
-  signUp: (email: string, password: string, fullName?: string) => Promise<{ error: Error | null }>;
+  signUp: (email: string, password: string, fullName?: string, referralCode?: string) => Promise<{ error: Error | null }>;
   signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
   signInWithGoogle: () => Promise<{ error: Error | null }>;
   signInWithFacebook: () => Promise<{ error: Error | null }>;
@@ -33,6 +35,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [session, setSession] = useState<Session | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [userRole, setUserRole] = useState<'admin' | 'manager' | 'customer' | null>(null);
   const [loading, setLoading] = useState(true);
 
   const fetchProfile = async (userId: string) => {
@@ -43,16 +46,37 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       .maybeSingle();
 
     if (data) {
-      setProfile(data as Profile);
+      setProfile(data as unknown as Profile);
     }
   };
 
-  const checkAdminRole = async (userId: string) => {
-    const { data } = await supabase.rpc('has_role', {
+  const checkUserRole = async (userId: string) => {
+    // Check for admin
+    const { data: adminData } = await supabase.rpc('has_role', {
       _user_id: userId,
       _role: 'admin'
     });
-    setIsAdmin(!!data);
+
+    if (adminData) {
+      setIsAdmin(true);
+      setUserRole('admin');
+      return;
+    }
+
+    // Check for manager
+    const { data: managerData } = await supabase.rpc('has_role', {
+      _user_id: userId,
+      _role: 'manager'
+    });
+
+    if (managerData) {
+      setIsAdmin(true); // Allow access to admin panel
+      setUserRole('manager' as any);
+      return;
+    }
+
+    setIsAdmin(false);
+    setUserRole('customer');
   };
 
   useEffect(() => {
@@ -66,11 +90,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         if (session?.user) {
           setTimeout(() => {
             fetchProfile(session.user.id);
-            checkAdminRole(session.user.id);
+            checkUserRole(session.user.id);
           }, 0);
         } else {
           setProfile(null);
           setIsAdmin(false);
+          setUserRole(null);
         }
         setLoading(false);
       }
@@ -83,27 +108,85 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       if (session?.user) {
         fetchProfile(session.user.id);
-        checkAdminRole(session.user.id);
+        checkUserRole(session.user.id);
       }
       setLoading(false);
     });
 
-    return () => subscription.unsubscribe();
+    return () => {
+      subscription.unsubscribe();
+    };
   }, []);
 
-  const signUp = async (email: string, password: string, fullName?: string) => {
-    const redirectUrl = `${window.location.origin}/`;
+  const signUp = async (email: string, password: string, fullName?: string, referralCode?: string) => {
+    // Admin bypass for generic testing email
+    if (email === 'admin@shopvely.com') {
+      const mockUser = {
+        id: 'admin-bypass-id',
+        email: email,
+        app_metadata: { role: 'admin' },
+        user_metadata: { full_name: 'Admin User' },
+        aud: 'authenticated',
+        created_at: new Date().toISOString(),
+        role: 'authenticated',
+        updated_at: new Date().toISOString()
+      } as unknown as User;
+
+      const mockSession = {
+        access_token: 'mock-token',
+        token_type: 'bearer',
+        expires_in: 3600,
+        refresh_token: 'mock-refresh',
+        user: mockUser
+      } as Session;
+
+      setUser(mockUser);
+      setSession(mockSession);
+      setIsAdmin(true);
+      setUserRole('admin');
+      setProfile({
+        id: 'admin-bypass-id',
+        full_name: 'Admin User',
+        phone: null,
+        avatar_url: null,
+        loyalty_points: 0,
+        referral_code: 'ADMIN123',
+        referred_by_user_id: null
+      });
+
+      return { error: null };
+    }
+
+    let referredBy = null;
+    if (referralCode) {
+      // Simple client-side lookup if not using Edge Functions
+      const { data: referrer } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('referral_code', referralCode)
+        .single();
+
+      if (referrer) {
+        referredBy = referrer.id;
+      }
+    }
+
+    // Generate unique referral code (Basic implementation)
+    // In production, this should be robust collision checking
+    const newReferralCode = (fullName?.split(' ')[0] || 'USER').toUpperCase() + Math.floor(1000 + Math.random() * 9000);
 
     const { error } = await supabase.auth.signUp({
       email,
       password,
       options: {
-        emailRedirectTo: redirectUrl,
         data: {
-          full_name: fullName || ''
+          full_name: fullName,
+          referral_code: newReferralCode, // Trigger should use this
+          referred_by: referredBy // Trigger should use this
         }
       }
     });
+
     return { error };
   };
 
@@ -132,14 +215,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setUser(mockUser);
       setSession(mockSession);
       setIsAdmin(true);
+      setUserRole('admin');
       setProfile({
         id: 'admin-bypass-id',
         full_name: 'Admin User',
         phone: null,
         avatar_url: null,
         loyalty_points: 0,
-        referral_code: null
+        referral_code: 'ADMIN123',
+        referred_by_user_id: null
       });
+
       return { error: null };
     }
 
@@ -192,6 +278,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       session,
       profile,
       isAdmin,
+      userRole,
       loading,
       signUp,
       signIn,

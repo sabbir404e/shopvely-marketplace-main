@@ -79,8 +79,8 @@ const Header: React.FC = () => {
     'beauty-jewelry': <Sparkles className="h-4 w-4" />,
     'beauty': <Sparkles className="h-4 w-4" />,
     'sports': <Dumbbell className="h-4 w-4" />,
-    'books': <BookOpen className="h-4 w-4" />,
-    'sessional-products': <Gift className="h-4 w-4" />,
+
+    'seasonal-products': <Gift className="h-4 w-4" />,
     'kids-item': <Baby className="h-4 w-4" />,
   };
 

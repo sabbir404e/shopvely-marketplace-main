@@ -8,11 +8,13 @@ import { Switch } from '@/components/ui/switch';
 import { Separator } from '@/components/ui/separator';
 import { useToast } from "@/components/ui/use-toast";
 import { useSettings, BannerSlide } from '@/context/SettingsContext';
+import { useAuth } from '@/context/AuthContext';
 import { Textarea } from '@/components/ui/textarea';
 
 const SettingsTab: React.FC = () => {
     const { toast } = useToast();
     const { settings, updateSettings, isLoading } = useSettings();
+    const { userRole } = useAuth();
     const [formData, setFormData] = useState(settings);
 
     // Sync formData with settings when settings load or change externally
@@ -21,6 +23,7 @@ const SettingsTab: React.FC = () => {
     }, [settings]);
 
     const handleSave = () => {
+        if (userRole !== 'admin') return;
         updateSettings(formData);
         toast({
             title: "Settings Saved",
@@ -78,6 +81,7 @@ const SettingsTab: React.FC = () => {
                             id="storeName"
                             value={formData.storeName}
                             onChange={(e) => handleChange('storeName', e.target.value)}
+                            disabled={userRole !== 'admin'}
                         />
                     </div>
                     <div className="space-y-2">
@@ -86,6 +90,7 @@ const SettingsTab: React.FC = () => {
                             id="supportEmail"
                             value={formData.supportEmail}
                             onChange={(e) => handleChange('supportEmail', e.target.value)}
+                            disabled={userRole !== 'admin'}
                         />
                     </div>
                     <div className="flex items-center justify-between">
@@ -96,6 +101,7 @@ const SettingsTab: React.FC = () => {
                         <Switch
                             checked={formData.maintenanceMode}
                             onCheckedChange={(checked) => handleChange('maintenanceMode', checked)}
+                            disabled={userRole !== 'admin'}
                         />
                     </div>
                 </CardContent>
@@ -112,6 +118,7 @@ const SettingsTab: React.FC = () => {
                         <Switch
                             checked={formData.orderAlerts}
                             onCheckedChange={(checked) => handleChange('orderAlerts', checked)}
+                            disabled={userRole !== 'admin'}
                         />
                     </div>
                     <Separator />
@@ -120,6 +127,7 @@ const SettingsTab: React.FC = () => {
                         <Switch
                             checked={formData.stockWarnings}
                             onCheckedChange={(checked) => handleChange('stockWarnings', checked)}
+                            disabled={userRole !== 'admin'}
                         />
                     </div>
                     <Separator />
@@ -128,6 +136,7 @@ const SettingsTab: React.FC = () => {
                         <Switch
                             checked={formData.newSignups}
                             onCheckedChange={(checked) => handleChange('newSignups', checked)}
+                            disabled={userRole !== 'admin'}
                         />
                     </div>
                 </CardContent>
@@ -147,6 +156,7 @@ const SettingsTab: React.FC = () => {
                                     variant="destructive"
                                     size="sm"
                                     onClick={() => handleRemoveBanner(index)}
+                                    disabled={userRole !== 'admin'}
                                 >
                                     <Trash2 className="h-4 w-4" />
                                 </Button>
@@ -208,7 +218,7 @@ const SettingsTab: React.FC = () => {
                                         <option value="beauty-jewelry">Beauty & Jewelry</option>
                                         <option value="sports">Sports</option>
                                         <option value="books">Books</option>
-                                        <option value="sessional-products">Sessional Products</option>
+                                        <option value="seasonal-products">Seasonal Products</option>
                                         <option value="kids-item">Kids Item</option>
                                     </select>
                                 </div>

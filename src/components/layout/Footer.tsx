@@ -2,7 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useSettings } from '@/context/SettingsContext';
-import { Mail, Phone, MapPin, MessageCircle } from 'lucide-react';
+import { Mail, Phone, MapPin, MessageCircle, Clock } from 'lucide-react';
 import codLogo from '@/assets/payments/cod.png';
 import bkashLogo from '@/assets/payments/bkash.png';
 import nagadLogo from '@/assets/payments/nagad.png';
@@ -138,6 +138,13 @@ const Footer: React.FC = () => {
               <li className="flex items-center gap-3">
                 <Mail className="h-5 w-5 text-primary flex-shrink-0" />
                 <span className="text-secondary-foreground/70 text-sm">{settings.supportEmail}</span>
+              </li>
+              <li className="flex items-start gap-3">
+                <Clock className="h-5 w-5 text-primary flex-shrink-0" />
+                <div className="flex flex-col">
+                  <span className="text-secondary-foreground font-medium text-sm">{t('footer.workingHours')}</span>
+                  <span className="text-secondary-foreground/70 text-sm">{t('footer.workingHoursValue')}</span>
+                </div>
               </li>
             </ul>
           </div>

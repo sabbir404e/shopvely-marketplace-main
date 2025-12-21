@@ -30,7 +30,7 @@ interface SettingsContextType {
 
 const DEFAULT_SETTINGS: Settings = {
     storeName: 'ShopVely',
-    supportEmail: 'support@shopvely.com',
+    supportEmail: 'contact.shopvely@gmail.com',
     maintenanceMode: false,
     orderAlerts: true,
     stockWarnings: true,
@@ -49,14 +49,14 @@ const DEFAULT_SETTINGS: Settings = {
         },
         {
             id: 2,
-            badge: '✨ Sessional Sale',
+            badge: '✨ Seasonal Sale',
             title: 'Festive',
             highlight: 'Collection',
             description: 'Celebrate in style with our exclusive festive collection. Traditional meets modern fashion.',
             image: 'https://images.unsplash.com/photo-1483985988355-763728e1935b?w=800',
             discount: 'UP TO 40% OFF',
             bgClass: 'from-accent/20 via-primary/20 to-secondary/30',
-            category: 'sessional-products',
+            category: 'seasonal-products',
         },
         {
             id: 3,

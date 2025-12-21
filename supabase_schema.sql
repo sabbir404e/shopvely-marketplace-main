@@ -9,6 +9,9 @@ create table profiles (
   phone text,
   role text default 'customer' check (role in ('admin', 'customer', 'staff')),
   avatar_url text,
+  loyalty_points integer default 0,
+  referral_code text unique,
+  referred_by_user_id uuid references profiles(id) on delete set null,
   created_at timestamptz default now(),
   updated_at timestamptz default now()
 );
@@ -266,3 +269,54 @@ $$ language plpgsql;
 create trigger update_profiles_updated_at before update on profiles for each row execute function update_updated_at_column();
 create trigger update_products_updated_at before update on products for each row execute function update_updated_at_column();
 create trigger update_orders_updated_at before update on orders for each row execute function update_updated_at_column();
+ 
+ - -   1 7 .   L o y a l t y   T r a n s a c t i o n s  
+ c r e a t e   t a b l e   l o y a l t y _ t r a n s a c t i o n s   (  
+     i d   u u i d   d e f a u l t   g e n _ r a n d o m _ u u i d ( )   p r i m a r y   k e y ,  
+     u s e r _ i d   u u i d   r e f e r e n c e s   p r o f i l e s ( i d )   o n   d e l e t e   c a s c a d e   n o t   n u l l ,  
+     t y p e   t e x t   n o t   n u l l ,   - -   ' E A R N _ P U R C H A S E ' ,   ' E A R N _ R E F E R R A L ' ,   ' W I T H D R A W _ R E Q U E S T ' ,   ' W I T H D R A W _ R E J E C T E D _ R E F U N D '  
+     p o i n t s   i n t e g e r   n o t   n u l l ,  
+     t k _ a m o u n t   n u m e r i c ( 1 0 ,   2 )   d e f a u l t   0 ,  
+     o r d e r _ i d   t e x t ,   - -   C a n   b e   i n t e r n a l   I D   o r   s t r i n g   I D  
+     m e t a _ j s o n   j s o n b ,  
+     c r e a t e d _ a t   t i m e s t a m p t z   d e f a u l t   n o w ( )  
+ ) ;  
+  
+ - -   1 8 .   W i t h d r a w   R e q u e s t s  
+ c r e a t e   t a b l e   w i t h d r a w _ r e q u e s t s   (  
+     i d   u u i d   d e f a u l t   g e n _ r a n d o m _ u u i d ( )   p r i m a r y   k e y ,  
+     u s e r _ i d   u u i d   r e f e r e n c e s   p r o f i l e s ( i d )   o n   d e l e t e   c a s c a d e   n o t   n u l l ,  
+     p o i n t s _ a m o u n t   i n t e g e r   n o t   n u l l ,  
+     w i t h d r a w _ t k   n u m e r i c ( 1 0 ,   2 )   n o t   n u l l ,  
+     m e t h o d   t e x t   n o t   n u l l ,   - -   ' B K A S H ' ,   ' N A G A D '  
+     n u m b e r   t e x t   n o t   n u l l ,  
+     s t a t u s   t e x t   d e f a u l t   ' P R O C E S S I N G '   c h e c k   ( s t a t u s   i n   ( ' P R O C E S S I N G ' ,   ' C O M P L E T E D ' ,   ' R E J E C T E D ' ) ) ,  
+     c r e a t e d _ a t   t i m e s t a m p t z   d e f a u l t   n o w ( ) ,  
+     u p d a t e d _ a t   t i m e s t a m p t z   d e f a u l t   n o w ( )  
+ ) ;  
+  
+ - -   E n a b l e   R L S  
+ a l t e r   t a b l e   l o y a l t y _ t r a n s a c t i o n s   e n a b l e   r o w   l e v e l   s e c u r i t y ;  
+ a l t e r   t a b l e   w i t h d r a w _ r e q u e s t s   e n a b l e   r o w   l e v e l   s e c u r i t y ;  
+  
+ - -   P o l i c i e s   f o r   L o y a l t y   T r a n s a c t i o n s  
+ c r e a t e   p o l i c y   " U s e r s   c a n   v i e w   o w n   t r a n s a c t i o n s "  
+     o n   l o y a l t y _ t r a n s a c t i o n s   f o r   s e l e c t   u s i n g   ( u s e r _ i d   =   a u t h . u i d ( ) ) ;  
+  
+ c r e a t e   p o l i c y   " A d m i n s   c a n   v i e w   a l l   t r a n s a c t i o n s "  
+     o n   l o y a l t y _ t r a n s a c t i o n s   f o r   s e l e c t   u s i n g   (  
+         e x i s t s   ( s e l e c t   1   f r o m   p r o f i l e s   w h e r e   i d   =   a u t h . u i d ( )   a n d   r o l e   =   ' a d m i n ' )  
+     ) ;  
+  
+ - -   P o l i c i e s   f o r   W i t h d r a w   R e q u e s t s  
+ c r e a t e   p o l i c y   " U s e r s   c a n   v i e w   o w n   w i t h d r a w   r e q u e s t s "  
+     o n   w i t h d r a w _ r e q u e s t s   f o r   s e l e c t   u s i n g   ( u s e r _ i d   =   a u t h . u i d ( ) ) ;  
+  
+ c r e a t e   p o l i c y   " U s e r s   c a n   i n s e r t   o w n   w i t h d r a w   r e q u e s t s "  
+     o n   w i t h d r a w _ r e q u e s t s   f o r   i n s e r t   w i t h   c h e c k   ( u s e r _ i d   =   a u t h . u i d ( ) ) ;  
+  
+ c r e a t e   p o l i c y   " A d m i n s   c a n   m a i n t a i n   w i t h d r a w   r e q u e s t s "  
+     o n   w i t h d r a w _ r e q u e s t s   f o r   a l l   u s i n g   (  
+         e x i s t s   ( s e l e c t   1   f r o m   p r o f i l e s   w h e r e   i d   =   a u t h . u i d ( )   a n d   r o l e   =   ' a d m i n ' )  
+     ) ;  
+ 

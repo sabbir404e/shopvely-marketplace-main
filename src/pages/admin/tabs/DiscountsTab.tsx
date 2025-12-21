@@ -6,6 +6,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { toast } from '@/hooks/use-toast';
 import { Badge } from '@/components/ui/badge';
+import { useProducts } from '@/context/ProductContext';
+import { useAuth } from '@/context/AuthContext';
 
 export interface Coupon {
     id: string;
@@ -16,16 +18,11 @@ export interface Coupon {
     productIds?: string[];
 }
 
-const PRODUCTS = [
-    { id: '1', name: 'Premium Kurta Set' },
-    { id: '2', name: 'Casual Cotton Shirt' },
-    { id: '3', name: 'Silk Saree Collection' },
-    { id: '4', name: 'Denim Jeans' },
-    { id: '5', name: 'Traditional Panjabi' },
-    { id: '6', name: 'Georgette Kameez' },
-];
+
 
 const DiscountsTab: React.FC = () => {
+    const { products } = useProducts();
+    const { userRole } = useAuth();
     const [coupons, setCoupons] = useState<Coupon[]>(() => {
         const saved = localStorage.getItem('shopvely-coupons');
         return saved ? JSON.parse(saved) : [];
@@ -112,65 +109,67 @@ const DiscountsTab: React.FC = () => {
 
     return (
         <div className="grid gap-6 md:grid-cols-2">
-            <Card>
-                <CardHeader>
-                    <CardTitle>Create New Discount</CardTitle>
-                </CardHeader>
-                <CardContent>
-                    <form onSubmit={handleAddCoupon} className="space-y-4">
-                        <div>
-                            <label className="text-sm font-medium mb-1 block">Coupon Code</label>
-                            <Input
-                                placeholder="e.g. SUMMER20"
-                                value={newCoupon.code}
-                                onChange={e => setNewCoupon({ ...newCoupon, code: e.target.value })}
-                            />
-                        </div>
-                        <div>
-                            <label className="text-sm font-medium mb-1 block">Discount Percentage (%)</label>
-                            <Input
-                                type="number"
-                                placeholder="20"
-                                value={newCoupon.percentage}
-                                onChange={e => setNewCoupon({ ...newCoupon, percentage: e.target.value })}
-                            />
-                        </div>
-                        <div>
-                            <label className="text-sm font-medium mb-1 block">Expiry Date</label>
-                            <Input
-                                type="date"
-                                value={newCoupon.expiryDate}
-                                onChange={e => setNewCoupon({ ...newCoupon, expiryDate: e.target.value })}
-                            />
-                        </div>
-
-                        <div>
-                            <label className="text-sm font-medium mb-1 block">Applicable Products (Optional)</label>
-                            <div className="border rounded-md p-3 max-h-48 overflow-y-auto space-y-2">
-                                <p className="text-xs text-muted-foreground mb-2">Select products to apply this discount to. Leave empty for all products.</p>
-                                {PRODUCTS.map(product => (
-                                    <div key={product.id} className="flex items-center space-x-2">
-                                        <input
-                                            type="checkbox"
-                                            id={`prod-${product.id}`}
-                                            checked={newCoupon.productIds.includes(product.id)}
-                                            onChange={() => toggleProductSelection(product.id)}
-                                            className="rounded border-gray-300 text-primary focus:ring-primary"
-                                        />
-                                        <label htmlFor={`prod-${product.id}`} className="text-sm cursor-pointer select-none">
-                                            {product.name}
-                                        </label>
-                                    </div>
-                                ))}
+            {userRole === 'admin' && (
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Create New Discount</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <form onSubmit={handleAddCoupon} className="space-y-4">
+                            <div>
+                                <label className="text-sm font-medium mb-1 block">Coupon Code</label>
+                                <Input
+                                    placeholder="e.g. SUMMER20"
+                                    value={newCoupon.code}
+                                    onChange={e => setNewCoupon({ ...newCoupon, code: e.target.value })}
+                                />
                             </div>
-                        </div>
+                            <div>
+                                <label className="text-sm font-medium mb-1 block">Discount Percentage (%)</label>
+                                <Input
+                                    type="number"
+                                    placeholder="20"
+                                    value={newCoupon.percentage}
+                                    onChange={e => setNewCoupon({ ...newCoupon, percentage: e.target.value })}
+                                />
+                            </div>
+                            <div>
+                                <label className="text-sm font-medium mb-1 block">Expiry Date</label>
+                                <Input
+                                    type="date"
+                                    value={newCoupon.expiryDate}
+                                    onChange={e => setNewCoupon({ ...newCoupon, expiryDate: e.target.value })}
+                                />
+                            </div>
 
-                        <Button type="submit" className="w-full gap-2">
-                            <Plus className="h-4 w-4" /> Create Coupon
-                        </Button>
-                    </form>
-                </CardContent>
-            </Card>
+                            <div>
+                                <label className="text-sm font-medium mb-1 block">Applicable Products (Optional)</label>
+                                <div className="border rounded-md p-3 max-h-48 overflow-y-auto space-y-2">
+                                    <p className="text-xs text-muted-foreground mb-2">Select products to apply this discount to. Leave empty for all products.</p>
+                                    {products.map(product => (
+                                        <div key={product.id} className="flex items-center space-x-2">
+                                            <input
+                                                type="checkbox"
+                                                id={`prod-${product.id}`}
+                                                checked={newCoupon.productIds.includes(product.id)}
+                                                onChange={() => toggleProductSelection(product.id)}
+                                                className="rounded border-gray-300 text-primary focus:ring-primary"
+                                            />
+                                            <label htmlFor={`prod-${product.id}`} className="text-sm cursor-pointer select-none">
+                                                {product.name}
+                                            </label>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+
+                            <Button type="submit" className="w-full gap-2">
+                                <Plus className="h-4 w-4" /> Create Coupon
+                            </Button>
+                        </form>
+                    </CardContent>
+                </Card>
+            )}
 
             <Card>
                 <CardHeader>
@@ -192,7 +191,7 @@ const DiscountsTab: React.FC = () => {
                                 <TableRow key={coupon.id}>
                                     <TableCell className="font-medium">{coupon.code}</TableCell>
                                     <TableCell>{coupon.percentage}%</TableCell>
-                                    <TableCell className="max-w-[150px] truncate" title={coupon.productIds ? coupon.productIds.map(id => PRODUCTS.find(p => p.id === id)?.name).join(', ') : "All Products"}>
+                                    <TableCell className="max-w-[150px] truncate" title={coupon.productIds ? coupon.productIds.map(id => products.find(p => p.id === id)?.name).join(', ') : "All Products"}>
                                         {coupon.productIds && coupon.productIds.length > 0
                                             ? `${coupon.productIds.length} Product(s)`
                                             : "All Products"}

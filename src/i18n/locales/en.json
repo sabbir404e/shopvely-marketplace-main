@@ -40,8 +40,7 @@
     "beauty-jewelry": "Beauty & Jewelry",
     "beauty": "Beauty & Jewelry",
     "sports": "Sports",
-    "books": "Books",
-    "sessional-products": "Sessional Products",
+    "seasonal-products": "Seasonal Products",
     "kids-item": "Kids Item"
   },
   "hero": {
@@ -185,6 +184,8 @@
     "termsConditions": "Terms & Conditions",
     "paymentMethods": "Payment Methods",
     "phone": "01797832574",
+    "workingHours": "Working Hours",
+    "workingHoursValue": "Sat - Thu: 9AM - 12PM",
     "allRightsReserved": "All Rights Reserved"
   },
   "checkout": {
@@ -279,7 +280,8 @@
         "ceo": "Founder & CEO",
         "cto": "Founder & CTO",
         "marketing": "Marketing Executive",
-        "marketingExecutive": "Marketing Executive"
+        "marketingExecutive": "Marketing Executive",
+        "brandAmbassador": "Brand Ambassador"
       }
     },
     "cta": {

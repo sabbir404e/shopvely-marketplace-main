@@ -5,20 +5,138 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
-import { User, Mail, Phone, Star, Gift, Copy, LogOut, Shield, Loader2 } from 'lucide-react';
+import { User, Mail, Phone, Star, Gift, Copy, LogOut, Shield, Loader2, CreditCard, History } from 'lucide-react';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { supabase } from '@/integrations/supabase/client';
 
 const Account: React.FC = () => {
   const { user, profile, isAdmin, loading, signOut } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const [isWithdrawOpen, setIsWithdrawOpen] = React.useState(false);
+  const [withdrawAmount, setWithdrawAmount] = React.useState('');
+  const [paymentMethod, setPaymentMethod] = React.useState('BKASH');
+  const [paymentNumber, setPaymentNumber] = React.useState('');
+  const [withdrawHistory, setWithdrawHistory] = React.useState<any[]>([]);
+  const [isWithdrawing, setIsWithdrawing] = React.useState(false);
 
   useEffect(() => {
     if (!loading && !user) {
       navigate('/auth');
     }
+    if (user) {
+      fetchWithdrawHistory();
+    }
   }, [user, loading, navigate]);
+
+
+
+  const fetchWithdrawHistory = async () => {
+    const { data } = await supabase
+      .from('withdraw_requests' as any)
+      .select('*')
+      .eq('user_id', user?.id)
+      .order('created_at', { ascending: false });
+
+    if (data) {
+      setWithdrawHistory(data);
+    }
+  };
+
+  const handleWithdrawSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!user || !profile) return;
+
+    const points = parseInt(withdrawAmount);
+    if (isNaN(points) || points <= 0) {
+      toast({ title: "Invalid Amount", description: "Please enter a valid point amount.", variant: "destructive" });
+      return;
+    }
+
+    if (points > profile.loyalty_points) {
+      toast({ title: "Insufficient Points", description: "You do not have enough points.", variant: "destructive" });
+      return;
+    }
+
+    // Minimum withdraw check (Optional: 10 TK = 100 Points)
+    if (points < 100) {
+      toast({ title: "Minimum Withdraw", description: "Minimum withdrawal is 100 points (10 TK).", variant: "destructive" });
+      return;
+    }
+
+    setIsWithdrawing(true);
+    try {
+      const withdrawTk = points / 10;
+
+      // 1. Deduct Points
+      const { error: updateError } = await supabase
+        .from('profiles')
+        .update({ loyalty_points: profile.loyalty_points - points } as any)
+        .eq('id', user.id);
+
+      if (updateError) throw updateError;
+
+      // 2. Create Withdraw Request
+      const { error: insertError } = await (supabase.from('withdraw_requests' as any) as any).insert({
+        user_id: user.id,
+        points_amount: points,
+        withdraw_tk: withdrawTk,
+        method: paymentMethod,
+        number: paymentNumber,
+        status: 'PROCESSING'
+      });
+
+      if (insertError) throw insertError;
+
+      // 3. Log Transaction
+      await (supabase.from('loyalty_transactions' as any) as any).insert({
+        user_id: user.id,
+        type: 'WITHDRAW_REQUEST',
+        points: -points,
+        tk_amount: withdrawTk,
+        created_at: new Date().toISOString()
+      });
+
+      toast({ title: "Request Submitted", description: `Withdrawal request for ৳${withdrawTk} submitted.` });
+      setIsWithdrawOpen(false);
+      setWithdrawAmount('');
+      setPaymentNumber('');
+      fetchWithdrawHistory();
+      window.location.reload(); // Refresh to update profile context context
+    } catch (error: any) {
+      console.error('Withdraw Error:', error);
+      toast({ title: "Error", description: error.message || "Failed to process request.", variant: "destructive" });
+    } finally {
+      setIsWithdrawing(false);
+    }
+  };
 
   const handleCopyReferral = () => {
     if (profile?.referral_code) {
@@ -89,9 +207,9 @@ const Account: React.FC = () => {
                 <div className="flex items-center gap-4">
                   <div className="h-16 w-16 rounded-full bg-primary/10 flex items-center justify-center">
                     {profile?.avatar_url ? (
-                      <img 
-                        src={profile.avatar_url} 
-                        alt="Avatar" 
+                      <img
+                        src={profile.avatar_url}
+                        alt="Avatar"
                         className="h-16 w-16 rounded-full object-cover"
                       />
                     ) : (
@@ -139,11 +257,69 @@ const Account: React.FC = () => {
                   </span>
                   <p className="text-sm text-muted-foreground mt-1">points available</p>
                 </div>
-                <div className="mt-4 p-3 bg-muted rounded-lg">
-                  <p className="text-xs text-muted-foreground">
-                    Earn points with every purchase. 100 points = ৳50 discount!
+                <div className="mt-4 p-3 bg-muted rounded-lg mb-4">
+                  <p className="text-xs text-muted-foreground text-center">
+                    10 points = ৳1. Minimum withdraw: 100 points.
                   </p>
                 </div>
+                <Dialog open={isWithdrawOpen} onOpenChange={setIsWithdrawOpen}>
+                  <DialogTrigger asChild>
+                    <Button className="w-full gap-2">
+                      <CreditCard className="h-4 w-4" />
+                      Withdraw Points
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle>Withdraw Loyalty Points</DialogTitle>
+                      <DialogDescription>
+                        Convert your points to cash. Rate: 10 Points = 1 BDT.
+                      </DialogDescription>
+                    </DialogHeader>
+                    <form onSubmit={handleWithdrawSubmit} className="space-y-4">
+                      <div className="space-y-2">
+                        <Label>Points to Withdraw (Available: {profile?.loyalty_points})</Label>
+                        <Input
+                          type="number"
+                          value={withdrawAmount}
+                          onChange={(e) => setWithdrawAmount(e.target.value)}
+                          placeholder="Min 100"
+                          max={profile?.loyalty_points}
+                        />
+                        {withdrawAmount && (
+                          <p className="text-sm text-muted-foreground">
+                            You will receive: ৳{parseInt(withdrawAmount || '0') / 10}
+                          </p>
+                        )}
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Payment Method</Label>
+                        <Select value={paymentMethod} onValueChange={setPaymentMethod}>
+                          <SelectTrigger>
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="BKASH">bKash</SelectItem>
+                            <SelectItem value="NAGAD">Nagad</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Mobile Number</Label>
+                        <Input
+                          value={paymentNumber}
+                          onChange={(e) => setPaymentNumber(e.target.value)}
+                          placeholder="017xxxxxxxx"
+                        />
+                      </div>
+                      <DialogFooter>
+                        <Button type="submit" disabled={isWithdrawing}>
+                          {isWithdrawing ? "Processing..." : "Submit Request"}
+                        </Button>
+                      </DialogFooter>
+                    </form>
+                  </DialogContent>
+                </Dialog>
               </CardContent>
             </Card>
 
@@ -157,7 +333,7 @@ const Account: React.FC = () => {
                 <CardDescription>Share and earn rewards</CardDescription>
               </CardHeader>
               <CardContent>
-            {profile?.referral_code ? (
+                {profile?.referral_code ? (
                   <div className="space-y-3">
                     <div>
                       <p className="text-xs text-muted-foreground mb-1">Your Code</p>
@@ -176,9 +352,9 @@ const Account: React.FC = () => {
                         <div className="flex-1 px-3 py-2 bg-muted rounded-lg text-sm truncate">
                           {`${window.location.origin}/?ref=${profile.referral_code}`}
                         </div>
-                        <Button 
-                          size="icon" 
-                          variant="outline" 
+                        <Button
+                          size="icon"
+                          variant="outline"
                           onClick={() => {
                             navigator.clipboard.writeText(`${window.location.origin}/?ref=${profile.referral_code}`);
                             toast({
@@ -218,14 +394,66 @@ const Account: React.FC = () => {
                 <Link to="/cart">
                   <Button variant="outline">View Cart</Button>
                 </Link>
-                <Button 
-                  variant="outline" 
+                <Button
+                  variant="outline"
                   className="text-destructive hover:text-destructive"
                   onClick={handleSignOut}
                 >
                   <LogOut className="h-4 w-4 mr-2" />
                   Sign Out
                 </Button>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Withdraw History */}
+          <div className="mt-8">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <History className="h-5 w-5" />
+                  Withdraw History
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Date</TableHead>
+                      <TableHead>Method</TableHead>
+                      <TableHead>Amount</TableHead>
+                      <TableHead>Status</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {withdrawHistory.length === 0 ? (
+                      <TableRow>
+                        <TableCell colSpan={4} className="text-center text-muted-foreground">No withdraw requests found.</TableCell>
+                      </TableRow>
+                    ) : (
+                      withdrawHistory.map((item: any) => (
+                        <TableRow key={item.id}>
+                          <TableCell>{new Date(item.created_at).toLocaleDateString()}</TableCell>
+                          <TableCell>{item.method} ({item.number})</TableCell>
+                          <TableCell>
+                            <div className="flex flex-col">
+                              <span className="font-bold">৳{item.withdraw_tk}</span>
+                              <span className="text-xs text-muted-foreground">{item.points_amount} pts</span>
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <Badge variant={
+                              item.status === 'COMPLETED' ? 'default' :
+                                item.status === 'REJECTED' ? 'destructive' : 'secondary'
+                            }>
+                              {item.status}
+                            </Badge>
+                          </TableCell>
+                        </TableRow>
+                      ))
+                    )}
+                  </TableBody>
+                </Table>
               </CardContent>
             </Card>
           </div>

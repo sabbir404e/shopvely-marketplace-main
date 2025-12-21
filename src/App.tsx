@@ -74,6 +74,7 @@ const App = () => (
                           <Route path="users" element={<Dashboard />} />
                           <Route path="reviews" element={<Dashboard />} />
                           <Route path="discounts" element={<Dashboard />} />
+                          <Route path="withdrawals" element={<Dashboard />} />
                           <Route path="settings" element={<Dashboard />} />
                         </Route>
 

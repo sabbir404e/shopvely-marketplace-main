@@ -8,6 +8,7 @@ import UsersTab from './tabs/UsersTab';
 import DiscountsTab from './tabs/DiscountsTab';
 import ReviewsTab from './tabs/ReviewsTab';
 import SettingsTab from './tabs/SettingsTab';
+import WithdrawalsTab from './tabs/WithdrawalsTab';
 
 const Dashboard: React.FC = () => {
   const location = useLocation();
@@ -17,7 +18,7 @@ const Dashboard: React.FC = () => {
   // Sync active tab with URL path
   useEffect(() => {
     const path = location.pathname.split("/").pop();
-    if (path && ['analytics', 'products', 'orders', 'users', 'reviews', 'discounts', 'settings'].includes(path)) {
+    if (path && ['analytics', 'products', 'orders', 'users', 'reviews', 'discounts', 'settings', 'withdrawals'].includes(path)) {
       setActiveTab(path);
     } else if (location.pathname === '/admin' || location.pathname === '/admin/') {
       setActiveTab('analytics');
@@ -48,6 +49,7 @@ const Dashboard: React.FC = () => {
           <TabsTrigger value="users">Users</TabsTrigger>
           <TabsTrigger value="reviews">Reviews</TabsTrigger>
           <TabsTrigger value="discounts">Discounts</TabsTrigger>
+          <TabsTrigger value="withdrawals">Withdrawals</TabsTrigger>
           <TabsTrigger value="settings">Settings</TabsTrigger>
         </TabsList>
 
@@ -73,6 +75,10 @@ const Dashboard: React.FC = () => {
 
         <TabsContent value="discounts" className="space-y-4">
           <DiscountsTab />
+        </TabsContent>
+
+        <TabsContent value="withdrawals" className="space-y-4">
+          <WithdrawalsTab />
         </TabsContent>
 
         <TabsContent value="settings" className="space-y-4">

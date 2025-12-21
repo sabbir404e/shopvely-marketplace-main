@@ -21,6 +21,7 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useToast } from "@/components/ui/use-toast";
+import { useAuth } from '@/context/AuthContext';
 
 // Mock Data Interface
 interface UserData {
@@ -33,11 +34,12 @@ interface UserData {
 
 const UsersTab: React.FC = () => {
     const { toast } = useToast();
+    const { userRole } = useAuth();
     const [searchTerm, setSearchTerm] = useState('');
 
     // Initial Mock Data
     const [users, setUsers] = useState<UserData[]>([
-        { id: 1, name: 'Admin User', email: 'admin@shopvely.com', role: 'Admin', joined: '2025-01-01' },
+        { id: 1, name: 'Admin User', email: 'sabbirhossain8721@gmail.com', role: 'Admin', joined: '2025-01-01' },
         { id: 2, name: 'Sabbir Hossain', email: 'sabbir@example.com', role: 'Customer', joined: '2025-11-15' },
         { id: 3, name: 'Rahim Ahmed', email: 'rahim@example.com', role: 'Customer', joined: '2025-11-20' },
         { id: 4, name: 'Manager User', email: 'manager@shopvely.com', role: 'Manager', joined: '2025-06-10' },
@@ -130,35 +132,35 @@ const UsersTab: React.FC = () => {
                                         </TableCell>
                                         <TableCell>{user.joined}</TableCell>
                                         <TableCell className="text-right">
-                                            <DropdownMenu>
-                                                <DropdownMenuTrigger asChild>
-                                                    <Button variant="ghost" className="h-8 w-8 p-0">
-                                                        <span className="sr-only">Open menu</span>
-                                                        <MoreHorizontal className="h-4 w-4" />
-                                                    </Button>
-                                                </DropdownMenuTrigger>
-                                                <DropdownMenuContent align="end">
-                                                    <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                                                    <DropdownMenuItem onClick={() => navigator.clipboard.writeText(user.email)}>
-                                                        Copy Email
-                                                    </DropdownMenuItem>
-                                                    <DropdownMenuSeparator />
-                                                    <DropdownMenuLabel>Change Role</DropdownMenuLabel>
-                                                    <DropdownMenuItem onClick={() => handleRoleChange(user.id, 'Admin')}>
-                                                        Make Admin
-                                                    </DropdownMenuItem>
-                                                    <DropdownMenuItem onClick={() => handleRoleChange(user.id, 'Manager')}>
-                                                        Make Manager
-                                                    </DropdownMenuItem>
-                                                    <DropdownMenuItem onClick={() => handleRoleChange(user.id, 'Customer')}>
-                                                        Make Customer
-                                                    </DropdownMenuItem>
-                                                    <DropdownMenuSeparator />
-                                                    <DropdownMenuItem className="text-red-600" onClick={() => handleDelete(user.id)}>
-                                                        Delete User
-                                                    </DropdownMenuItem>
-                                                </DropdownMenuContent>
-                                            </DropdownMenu>
+                                            {userRole === 'admin' && (
+                                                <DropdownMenu>
+                                                    <DropdownMenuTrigger asChild>
+                                                        <Button variant="ghost" className="h-8 w-8 p-0">
+                                                            <span className="sr-only">Open menu</span>
+                                                            <MoreHorizontal className="h-4 w-4" />
+                                                        </Button>
+                                                    </DropdownMenuTrigger>
+                                                    <DropdownMenuContent align="end">
+                                                        <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                                                        <DropdownMenuItem onClick={() => navigator.clipboard.writeText(user.email)}>
+                                                            Copy Email
+                                                        </DropdownMenuItem>
+                                                        <DropdownMenuSeparator />
+                                                        <DropdownMenuLabel>Change Role</DropdownMenuLabel>
+
+                                                        <DropdownMenuItem onClick={() => handleRoleChange(user.id, 'Manager')}>
+                                                            Make Manager
+                                                        </DropdownMenuItem>
+                                                        <DropdownMenuItem onClick={() => handleRoleChange(user.id, 'Customer')}>
+                                                            Make Customer
+                                                        </DropdownMenuItem>
+                                                        <DropdownMenuSeparator />
+                                                        <DropdownMenuItem className="text-red-600" onClick={() => handleDelete(user.id)}>
+                                                            Delete User
+                                                        </DropdownMenuItem>
+                                                    </DropdownMenuContent>
+                                                </DropdownMenu>
+                                            )}
                                         </TableCell>
                                     </TableRow>
                                 ))

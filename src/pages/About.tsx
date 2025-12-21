@@ -12,6 +12,7 @@ import abuSayeedImage from '@/assets/team/abu_sayeed_v2.jpg';
 import tusarAhmedNayeemImage from '@/assets/team/tusar_ahmed_nayeem.jpg';
 import shariarHossainSunImage from '@/assets/team/shariar_hossain_sun.png';
 import mdAzomHossainImage from '@/assets/team/md_azom_hossain.png';
+import shopvelyStoreImage from '@/assets/about/shopvely-store.jpg';
 
 import { useLocation } from 'react-router-dom';
 
@@ -52,9 +53,9 @@ const About: React.FC = () => {
   ];
 
   const stats = [
-    { value: '50K+', label: t('about.stats.customers') },
-    { value: '10K+', label: t('about.stats.products') },
-    { value: '500+', label: t('about.stats.brands') },
+    { value: '10K+', label: t('about.stats.customers') },
+    { value: '500+', label: t('about.stats.products') },
+    { value: '200+', label: t('about.stats.brands') },
     { value: '99%', label: t('about.stats.satisfaction') },
   ];
 
@@ -79,7 +80,7 @@ const About: React.FC = () => {
     },
     {
       name: 'Md. Abu Sayeed',
-      role: t('about.team.roles.marketing'),
+      role: t('about.team.roles.brandAmbassador'),
       image: abuSayeedImage,
       details: [
         'Studying Islamic History at New Government Degree College, Rajshahi',
@@ -160,12 +161,12 @@ const About: React.FC = () => {
               </div>
               <div className="relative">
                 <img
-                  src="https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=600"
+                  src={shopvelyStoreImage}
                   alt="ShopVely Team"
                   className="rounded-2xl shadow-xl"
                 />
                 <div className="absolute -bottom-6 -left-6 bg-primary text-primary-foreground p-6 rounded-xl shadow-lg">
-                  <p className="text-4xl font-bold">5+</p>
+                  <p className="text-4xl font-bold">1+</p>
                   <p className="text-sm opacity-90">{t('about.story.yearsExcellence')}</p>
                 </div>
               </div>
@@ -248,7 +249,7 @@ const About: React.FC = () => {
               <p className="text-secondary-foreground/80 mb-6 max-w-lg mx-auto">
                 {t('about.cta.subtitle')}
               </p>
-              <Link to="/shop">
+              <Link to="/shop#shop-hero">
                 <Button size="lg" className="btn-primary gap-2">
                   {t('about.cta.button')}
                   <ArrowRight className="h-4 w-4" />

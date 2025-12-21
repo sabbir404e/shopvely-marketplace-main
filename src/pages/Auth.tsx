@@ -33,7 +33,8 @@ const Auth: React.FC = () => {
     fullName: '',
     email: '',
     password: '',
-    confirmPassword: ''
+    confirmPassword: '',
+    referralCode: ''
   });
 
   const { user, signIn, signUp, signInWithGoogle, signInWithFacebook, resetPassword } = useAuth();
@@ -53,7 +54,8 @@ const Auth: React.FC = () => {
     fullName: z.string().min(2, t('auth.validation.nameLength')).max(100, t('auth.validation.nameTooLong')),
     email: z.string().email(t('auth.validation.validEmail')),
     password: z.string().min(6, t('auth.validation.passwordLength')),
-    confirmPassword: z.string()
+    confirmPassword: z.string(),
+    referralCode: z.string().optional()
   }).refine((data) => data.password === data.confirmPassword, {
     message: t('auth.validation.passwordMismatch'),
     path: ["confirmPassword"]
@@ -175,7 +177,7 @@ const Auth: React.FC = () => {
           return;
         }
 
-        const { error } = await signUp(formData.email, formData.password, formData.fullName);
+        const { error } = await signUp(formData.email, formData.password, formData.fullName, formData.referralCode);
 
         if (error) {
           if (error.message.includes('already registered')) {
@@ -344,6 +346,19 @@ const Auth: React.FC = () => {
                 </div>
               )}
 
+              {!isLogin && (
+                <div className="space-y-2">
+                  <Label htmlFor="referralCode">{t('auth.referralCode') || "Referral Code (Optional)"}</Label>
+                  <Input
+                    id="referralCode"
+                    name="referralCode"
+                    placeholder="Enter referral code"
+                    value={formData.referralCode || ''}
+                    onChange={handleInputChange}
+                  />
+                </div>
+              )}
+
               <Button type="submit" className="w-full btn-primary" disabled={isLoading}>
                 {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 {isLogin ? t('auth.loginButton') : t('auth.signupButton')}
@@ -386,7 +401,7 @@ const Auth: React.FC = () => {
                   onClick={() => {
                     setIsLogin(!isLogin);
                     setErrors({});
-                    setFormData({ fullName: '', email: '', password: '', confirmPassword: '' });
+                    setFormData({ fullName: '', email: '', password: '', confirmPassword: '', referralCode: '' });
                   }}
                   className="ml-1 text-primary hover:underline font-medium"
                 >

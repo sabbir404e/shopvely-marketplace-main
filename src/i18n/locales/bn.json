@@ -40,8 +40,7 @@
     "beauty-jewelry": "বিউটি ও জুয়েলারি",
     "beauty": "বিউটি ও জুয়েলারি",
     "sports": "স্পোর্টস",
-    "books": "বই",
-    "sessional-products": "সিজনাল পণ্য",
+    "seasonal-products": "সিজনাল পণ্য",
     "kids-item": "কিডস আইটেম"
   },
   "hero": {
@@ -185,6 +184,8 @@
     "termsConditions": "শর্তাবলী",
     "paymentMethods": "পেমেন্ট পদ্ধতি",
     "phone": "01797832574",
+    "workingHours": "কাজের সময়",
+    "workingHoursValue": "শনি - বৃহঃ: সকাল ৯টা - দুপুর ১২টা",
     "allRightsReserved": "সর্বস্বত্ব সংরক্ষিত"
   },
   "checkout": {
@@ -280,7 +281,8 @@
         "ceo": "প্রতিষ্ঠাতা ও সিইও",
         "cto": "প্রতিষ্ঠাতা ও সিটিও",
         "marketing": "মার্কেটিং এক্সিকিউটিভ",
-        "marketingExecutive": "মার্কেটিং এক্সিকিউটিভ"
+        "marketingExecutive": "মার্কেটিং এক্সিকিউটিভ",
+        "brandAmbassador": "ব্র্যান্ড অ্যাম্বাসেডর"
       }
     },
     "cta": {

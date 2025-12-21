@@ -1,14 +1,18 @@
 import { Product, Category } from '@/types/product';
+import sportsCategoryImg from '@/assets/categories/sports_category.png';
+import kidsCategoryImg from '@/assets/categories/kids_category.png';
+import beautyCategoryImg from '@/assets/categories/beauty_category.png';
+import seasonalCategoryImg from '@/assets/categories/seasonal_category.png';
 
 export const categories: Category[] = [
   { id: '1', name: 'Electronics', slug: 'electronics', image: 'https://images.unsplash.com/photo-1498049794561-7780e7231661?w=400', productCount: 156 },
   { id: '2', name: 'Fashion', slug: 'fashion', image: 'https://images.unsplash.com/photo-1445205170230-053b83016050?w=400', productCount: 234 },
   { id: '3', name: 'Home & Living', slug: 'home-living', image: 'https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=400', productCount: 189 },
-  { id: '4', name: 'Beauty & Jewelry', slug: 'beauty-jewelry', image: 'https://images.unsplash.com/photo-1596462502278-27bfdc403348?w=400', productCount: 98 },
-  { id: '5', name: 'Sports', slug: 'sports', image: 'https://images.unsplash.com/photo-1517649763962-0c623066013b?w=400', productCount: 76 },
-  { id: '6', name: 'Books', slug: 'books', image: 'https://images.unsplash.com/photo-1495446815901-a7297e633e8d?w=400', productCount: 312 },
-  { id: '7', name: 'Sessional Products', slug: 'sessional-products', image: 'https://images.unsplash.com/photo-1513885535751-8b9238bd345a?w=400', productCount: 48 },
-  { id: '8', name: 'Kids Item', slug: 'kids-item', image: 'https://images.unsplash.com/photo-1519457431-44ccd64a579b?w=400', productCount: 42 },
+  { id: '4', name: 'Beauty & Jewelry', slug: 'beauty-jewelry', image: beautyCategoryImg, productCount: 98 },
+  { id: '5', name: 'Sports', slug: 'sports', image: sportsCategoryImg, productCount: 76 },
+
+  { id: '7', name: 'Seasonal Products', slug: 'seasonal-products', image: seasonalCategoryImg, productCount: 48 },
+  { id: '8', name: 'Kids Item', slug: 'kids-item', image: kidsCategoryImg, productCount: 42 },
 ];
 
 export const products: Product[] = [
@@ -203,7 +207,7 @@ export const products: Product[] = [
     originalPrice: 1599,
     discount: 19,
     images: ['https://images.unsplash.com/photo-1520903920248-0c4a1637c35e?w=800&auto=format&fit=crop'],
-    category: 'Sessional Products',
+    category: 'Seasonal Products',
     brand: 'WinterWarm',
     rating: 4.8,
     reviewCount: 45,

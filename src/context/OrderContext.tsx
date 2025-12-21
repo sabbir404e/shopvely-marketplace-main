@@ -19,10 +19,11 @@ export interface ShippingAddress {
 
 export interface Order {
     id: string;
-    customer: string;
+    customer: string; // Name
+    customerId?: string; // Supabase Auth ID
     date: string;
     total: number; // Storing as number for calculations
-    status: 'Delivered' | 'Processing' | 'Shipped' | 'Cancelled';
+    status: 'Delivered' | 'Processing' | 'Shipped' | 'Cancelled' | 'DEAL_COMPLETE';
     items: OrderItem[];
     shippingAddress?: ShippingAddress;
 }

@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useCart } from '@/context/CartContext';
 import { useOrders } from '@/context/OrderContext';
+import { useAuth } from '@/context/AuthContext';
 import { toast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 
@@ -18,6 +19,7 @@ const Checkout: React.FC = () => {
   const navigate = useNavigate();
   const { items, totalPrice, clearCart, subtotal, discount, applyCoupon, removeCoupon, appliedCoupon } = useCart();
   const { addOrder } = useOrders();
+  const { user } = useAuth();
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('cod');
   const [selectedCard, setSelectedCard] = useState<'visa' | 'mastercard'>('visa');
   const [selectedMobileService, setSelectedMobileService] = useState('bKash');
@@ -81,6 +83,7 @@ const Checkout: React.FC = () => {
     const newOrder = {
       id: newOrderId,
       customer: shippingInfo.name,
+      customerId: user?.id,
       date: new Date().toISOString().split('T')[0],
       total: finalTotal,
       status: 'Processing' as const,

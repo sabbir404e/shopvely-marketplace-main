@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Mail, Phone, Clock, Send, MessageSquare } from 'lucide-react';
+import { Send, MessageSquare } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
@@ -60,11 +60,7 @@ const Contact: React.FC = () => {
     setIsSubmitting(false);
   };
 
-  const contactInfo = [
-    { icon: Mail, label: t('contact.info.email'), value: 'support@shopvely.com', href: 'mailto:support@shopvely.com' },
-    { icon: Phone, label: t('contact.info.call'), value: '01797832574', href: 'tel:+8801797832574' },
-    { icon: Clock, label: t('contact.info.hours'), value: t('contact.info.hoursValue'), href: '#' },
-  ];
+
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
@@ -83,28 +79,7 @@ const Contact: React.FC = () => {
           </div>
         </section>
 
-        {/* Contact Info Cards */}
-        <section className="py-8 -mt-8">
-          <div className="container-main">
-            <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
-              {contactInfo.map((item, index) => (
-                <a
-                  key={index}
-                  href={item.href}
-                  className="p-6 bg-card rounded-xl border border-border hover:shadow-lg transition-shadow flex items-start gap-4"
-                >
-                  <div className="p-3 bg-primary/10 rounded-xl">
-                    <item.icon className="h-6 w-6 text-primary" />
-                  </div>
-                  <div>
-                    <h3 className="font-semibold text-foreground">{item.label}</h3>
-                    <p className="text-muted-foreground text-sm">{item.value}</p>
-                  </div>
-                </a>
-              ))}
-            </div>
-          </div>
-        </section>
+
 
         {/* Contact Form */}
         <section id="contact-form" className="py-12 lg:py-16 scroll-mt-24">

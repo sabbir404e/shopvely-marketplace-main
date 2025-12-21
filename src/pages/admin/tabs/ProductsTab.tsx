@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useProducts } from '@/context/ProductContext';
+import { useAuth } from '@/context/AuthContext';
 import { Product } from '@/types/product';
 import { categories } from '@/data/products';
 import {
@@ -33,6 +34,7 @@ import { useToast } from "@/components/ui/use-toast";
 
 const ProductsTab: React.FC = () => {
     const { products, addProduct, updateProduct, deleteProduct } = useProducts();
+    const { userRole } = useAuth();
     const { toast } = useToast();
     const [searchTerm, setSearchTerm] = useState('');
     const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -120,9 +122,11 @@ const ProductsTab: React.FC = () => {
         <div className="space-y-4">
             <div className="flex justify-between items-center">
                 <h2 className="text-xl font-semibold">Products Management</h2>
-                <Button onClick={() => handleOpenDialog()}>
-                    <Plus className="h-4 w-4 mr-2" /> Add Product
-                </Button>
+                {userRole === 'admin' && (
+                    <Button onClick={() => handleOpenDialog()}>
+                        <Plus className="h-4 w-4 mr-2" /> Add Product
+                    </Button>
+                )}
             </div>
 
             <div className="flex items-center space-x-2">
@@ -168,12 +172,16 @@ const ProductsTab: React.FC = () => {
                                     </span>
                                 </TableCell>
                                 <TableCell className="text-right space-x-2">
-                                    <Button variant="ghost" size="icon" onClick={() => handleOpenDialog(product)}>
-                                        <Pencil className="h-4 w-4" />
-                                    </Button>
-                                    <Button variant="ghost" size="icon" className="text-red-500 hover:text-red-700" onClick={() => handleDelete(product.id)}>
-                                        <Trash2 className="h-4 w-4" />
-                                    </Button>
+                                    {userRole === 'admin' && (
+                                        <>
+                                            <Button variant="ghost" size="icon" onClick={() => handleOpenDialog(product)}>
+                                                <Pencil className="h-4 w-4" />
+                                            </Button>
+                                            <Button variant="ghost" size="icon" className="text-red-500 hover:text-red-700" onClick={() => handleDelete(product.id)}>
+                                                <Trash2 className="h-4 w-4" />
+                                            </Button>
+                                        </>
+                                    )}
                                 </TableCell>
                             </TableRow>
                         ))}
