@@ -1,4 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from "@/components/ui/use-toast";
 
 export interface BannerSlide {
     id: number;
@@ -88,23 +90,113 @@ const SettingsContext = createContext<SettingsContextType | undefined>(undefined
 export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const [settings, setSettings] = useState<Settings>(DEFAULT_SETTINGS);
     const [isLoading, setIsLoading] = useState(true);
+    const { toast } = useToast();
 
+    // Fetch settings from Supabase
     useEffect(() => {
-        const storedSettings = localStorage.getItem('shopvely_settings');
-        if (storedSettings) {
+        const fetchSettings = async () => {
             try {
-                setSettings({ ...DEFAULT_SETTINGS, ...JSON.parse(storedSettings) });
-            } catch (e) {
-                console.error("Failed to parse settings", e);
+                const { data, error } = await supabase
+                    .from('site_settings' as any)
+                    .select('*');
+
+                if (error) throw error;
+
+                if (data) {
+                    const newSettings = { ...DEFAULT_SETTINGS };
+
+                    // Parse fetched settings
+                    data.forEach((item: any) => {
+                        if (item.key === 'settings_store') {
+                            newSettings.storeName = item.value.storeName;
+                            newSettings.supportEmail = item.value.supportEmail;
+                            newSettings.maintenanceMode = item.value.maintenanceMode;
+                        }
+                        if (item.key === 'settings_notifications') {
+                            newSettings.orderAlerts = item.value.orderAlerts;
+                            newSettings.stockWarnings = item.value.stockWarnings;
+                            newSettings.newSignups = item.value.newSignups;
+                        }
+                        if (item.key === 'settings_banners') {
+                            newSettings.bannerSlides = item.value;
+                        }
+                    });
+
+                    setSettings(newSettings);
+                }
+            } catch (error) {
+                console.error("Failed to fetch settings:", error);
+                // Fallback to default is already handled by initial state
+            } finally {
+                setIsLoading(false);
             }
-        }
-        setIsLoading(false);
+        };
+
+        fetchSettings();
     }, []);
 
-    const updateSettings = (newSettings: Partial<Settings>) => {
+    const updateSettings = async (newSettings: Partial<Settings>) => {
         const updated = { ...settings, ...newSettings };
         setSettings(updated);
-        localStorage.setItem('shopvely_settings', JSON.stringify(updated));
+
+        // Optimistic update locally, then sync to DB
+        // We split the huge object into 3 logical chunks for the DB
+
+        try {
+            const updates = [];
+
+            // 1. Store Settings
+            if (newSettings.storeName !== undefined || newSettings.supportEmail !== undefined || newSettings.maintenanceMode !== undefined) {
+                updates.push(supabase
+                    .from('site_settings' as any)
+                    .upsert({
+                        key: 'settings_store',
+                        value: {
+                            storeName: updated.storeName,
+                            supportEmail: updated.supportEmail,
+                            maintenanceMode: updated.maintenanceMode
+                        }
+                    } as any, { onConflict: 'key' }));
+            }
+
+            // 2. Notification Settings
+            if (newSettings.orderAlerts !== undefined || newSettings.stockWarnings !== undefined || newSettings.newSignups !== undefined) {
+                updates.push(supabase
+                    .from('site_settings' as any)
+                    .upsert({
+                        key: 'settings_notifications',
+                        value: {
+                            orderAlerts: updated.orderAlerts,
+                            stockWarnings: updated.stockWarnings,
+                            newSignups: updated.newSignups
+                        }
+                    } as any, { onConflict: 'key' }));
+            }
+
+            // 3. Banner Settings
+            if (newSettings.bannerSlides !== undefined) {
+                updates.push(supabase
+                    .from('site_settings' as any)
+                    .upsert({
+                        key: 'settings_banners',
+                        value: updated.bannerSlides
+                    } as any, { onConflict: 'key' }));
+            }
+
+            // If we are updating everything (e.g. from handleSave in admin panel), we rely on checks above.
+            // But if 'newSettings' has all keys, we might need to be careful. 
+            // The usage in SettingsTab passes the whole object, so all 3 blocks will likely fire.
+
+            await Promise.all(updates);
+
+        } catch (error: any) {
+            console.error("Failed to save settings:", error);
+            toast({
+                title: "Error Saving Settings",
+                description: "Failed to sync with server. Changes might be lost on refresh.",
+                variant: "destructive"
+            });
+        }
     };
 
     return (

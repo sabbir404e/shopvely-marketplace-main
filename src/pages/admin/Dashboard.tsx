@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Button } from '@/components/ui/button';
+import { useProducts } from '@/context/ProductContext';
 import AnalyticsTab from './tabs/AnalyticsTab';
 import ProductsTab from './tabs/ProductsTab';
 import OrdersTab from './tabs/OrdersTab';
@@ -14,6 +16,7 @@ const Dashboard: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("analytics");
+  const { seedDatabase } = useProducts();
 
   // Sync active tab with URL path
   useEffect(() => {
@@ -36,9 +39,24 @@ const Dashboard: React.FC = () => {
 
   return (
     <div className="space-y-8">
-      <div>
-        <h1 className="text-3xl font-bold text-foreground">Dashboard</h1>
-        <p className="text-muted-foreground">Welcome to the ShopVely admin panel</p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold text-foreground">Dashboard</h1>
+          <p className="text-muted-foreground">Welcome to the ShopVely admin panel</p>
+        </div>
+        <div className="flex gap-2">
+          <Button
+            variant="outline"
+            onClick={async () => {
+              // Start seeding
+              if (window.confirm("Are you sure you want to seed the database? This might duplicate data if run multiple times without strict checks.")) {
+                await seedDatabase();
+              }
+            }}
+          >
+            Seed Database
+          </Button>
+        </div>
       </div>
 
       <Tabs value={activeTab} onValueChange={handleTabChange} className="space-y-4">

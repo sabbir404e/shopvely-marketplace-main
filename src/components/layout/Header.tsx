@@ -20,6 +20,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { useSettings } from '@/context/SettingsContext';
 
 const Header: React.FC = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -30,6 +31,7 @@ const Header: React.FC = () => {
   const { products } = useProducts();
   const navigate = useNavigate();
   const { t, i18n } = useTranslation();
+  const { settings } = useSettings();
 
   const currentLanguage = i18n.language;
 
@@ -79,10 +81,18 @@ const Header: React.FC = () => {
     'beauty-jewelry': <Sparkles className="h-4 w-4" />,
     'beauty': <Sparkles className="h-4 w-4" />,
     'sports': <Dumbbell className="h-4 w-4" />,
-
     'seasonal-products': <Gift className="h-4 w-4" />,
-    'kids-item': <Baby className="h-4 w-4" />,
+    'kids-item': <Baby className="h-4 w-4" />, // Fixed typo from 'kids-dtem'
   };
+
+  // Helper to safely split store name
+  const getStoreNameParts = () => {
+    const name = settings.storeName || 'ShopVely';
+    if (name.length < 4) return [name, ''];
+    return [name.substring(0, 4), name.substring(4)];
+  };
+
+  const [storeNameFirst, storeNameSecond] = getStoreNameParts();
 
   return (
     <header className="sticky top-0 z-50 bg-header-bg border-b border-border shadow-sm">
@@ -140,8 +150,8 @@ const Header: React.FC = () => {
           {/* Logo */}
           <Link to="/" className="flex-shrink-0">
             <h1 className="text-2xl sm:text-3xl font-extrabold">
-              <span className="text-white">Shop</span>
-              <span className="text-white/80">Vely</span>
+              <span className="text-white">{storeNameFirst}</span>
+              <span className="text-white/80">{storeNameSecond}</span>
             </h1>
           </Link>
 
