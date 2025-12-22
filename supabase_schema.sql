@@ -44,6 +44,10 @@ create table if not exists products (
   tags text[],
   thumbnail_url text,
   gallery_urls text[],
+  is_new boolean default false,
+  is_featured boolean default false,
+  brand text,
+  sizes text[],
   created_at timestamptz default now(),
   updated_at timestamptz default now()
 );
@@ -294,6 +298,7 @@ do $$ begin
   if not exists (select from pg_policies where policyname = 'Published products are viewable by everyone' and tablename = 'products') then
     create policy "Published products are viewable by everyone" on products for select using (status = 'published');
   end if;
+  -- Add admin policy again to be sure
   if not exists (select from pg_policies where policyname = 'Admins can maintain products' and tablename = 'products') then
     create policy "Admins can maintain products" on products for all using (
       exists (select 1 from profiles where id = auth.uid() and role = 'admin')

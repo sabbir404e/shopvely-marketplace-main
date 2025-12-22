@@ -24,8 +24,8 @@ export const ProductProvider: React.FC<{ children: React.ReactNode }> = ({ child
     const fetchProducts = async () => {
         try {
             setIsLoading(true);
-            const { data, error } = await supabase
-
+            const { data, error } = await (supabase as any)
+                .from('products')
                 .select(`
                     *,
                     category:categories(name)
@@ -76,8 +76,6 @@ export const ProductProvider: React.FC<{ children: React.ReactNode }> = ({ child
     };
 
     const addProduct = async (product: Product) => {
-        // This is a simplified client-side add. Ideally should go through Admin function.
-        // Keeping interface for compatibility but warning it might not be full implementation.
         console.warn("Direct addProduct not implemented fully. Use seed or Admin panel.");
     };
 
@@ -102,12 +100,12 @@ export const ProductProvider: React.FC<{ children: React.ReactNode }> = ({ child
             const categoryMap = new Map<string, string>(); // slug -> uuid
 
             for (const cat of initialCategories) {
-                const { data: existing } = await supabase.from('categories').select('id').eq('slug', cat.slug).single();
+                const { data: existing } = await (supabase as any).from('categories').select('id').eq('slug', cat.slug).single();
 
                 if (existing) {
                     categoryMap.set(cat.slug, existing.id);
                 } else {
-                    const { data: newCat, error } = await supabase.from('categories').insert({
+                    const { data: newCat, error } = await (supabase as any).from('categories').insert({
                         name: cat.name,
                         slug: cat.slug,
                         image_url: cat.image,
@@ -121,8 +119,6 @@ export const ProductProvider: React.FC<{ children: React.ReactNode }> = ({ child
 
             // 2. Seed Products
             for (const p of initialProducts) {
-                // Find category ID
-                // Map frontend Category Name -> Slug -> ID
                 const catSlug = initialCategories.find(c => c.name === p.category)?.slug;
                 const categoryId = catSlug ? categoryMap.get(catSlug) : null;
 
@@ -143,11 +139,10 @@ export const ProductProvider: React.FC<{ children: React.ReactNode }> = ({ child
                     sizes: p.sizes
                 };
 
-                // Check if exists by slug
-                const { data: existing } = await supabase.from('products').select('id').eq('slug', dbProduct.slug).single();
+                const { data: existing } = await (supabase as any).from('products').select('id').eq('slug', dbProduct.slug).single();
 
                 if (!existing) {
-                    const { error } = await supabase.from('products').insert(dbProduct);
+                    const { error } = await (supabase as any).from('products').insert(dbProduct);
                     if (error) {
                         console.error(`Failed to insert ${p.name}:`, error);
                     }

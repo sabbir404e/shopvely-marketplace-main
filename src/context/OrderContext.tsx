@@ -1,191 +1,206 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-
-export interface OrderItem {
-    id: string;
-    name: string;
-    quantity: number;
-    price: number;
-    selectedSize?: string;
-}
-
-export interface ShippingAddress {
-    name: string;
-    phone: string;
-    address: string;
-    city: string;
-    village: string;
-    postalCode: string;
-}
-
-export interface Order {
-    id: string;
-    customer: string; // Name
-    customerId?: string; // Supabase Auth ID
-    date: string;
-    total: number; // Storing as number for calculations
-    status: 'Delivered' | 'Processing' | 'Shipped' | 'Cancelled' | 'DEAL_COMPLETE';
-    items: OrderItem[];
-    shippingAddress?: ShippingAddress;
-}
+import { supabase } from '@/integrations/supabase/client';
+import { Order, OrderItem } from '@/types/order';
+import { toast } from '@/hooks/use-toast';
+import { useAuth } from '@/context/AuthContext';
 
 interface OrderContextType {
     orders: Order[];
-    addOrder: (order: Order) => void;
-    updateOrderStatus: (orderId: string, status: Order['status']) => void;
-    deleteOrder: (orderId: string) => void;
+    isLoading: boolean;
+    addOrder: (order: Omit<Order, 'id' | 'date' | 'status'>) => Promise<string | null>;
+    updateOrderStatus: (orderId: string, status: Order['status']) => Promise<void>;
+    deleteOrder: (orderId: string) => Promise<void>;
     getStats: () => {
         totalRevenue: number;
         totalOrders: number;
         activeOrders: number;
     };
+    refreshOrders: () => Promise<void>;
 }
 
 const OrderContext = createContext<OrderContextType | undefined>(undefined);
 
-const STORAGE_KEY = 'shopvely_orders';
-
-// Initial dummy data
-const INITIAL_ORDERS: Order[] = [
-    {
-        id: 'ORD-001',
-        customer: 'Sabbir Hossain',
-        date: '2025-12-11',
-        total: 2500,
-        status: 'Delivered',
-        items: [
-            { id: '1', name: 'Premium Wireless Headphones', quantity: 1, price: 2500, selectedSize: undefined }
-        ],
-        shippingAddress: {
-            name: 'Sabbir Hossain',
-            phone: '01700000000',
-            address: 'House 12, Road 5',
-            city: 'Dhaka',
-            village: 'Uttara',
-            postalCode: '1230'
-        }
-    },
-    {
-        id: 'ORD-002',
-        customer: 'Rahim Ahmed',
-        date: '2025-12-12',
-        total: 1200,
-        status: 'Processing',
-        items: [
-            { id: '8', name: 'Cotton T-Shirt Pack', quantity: 1, price: 1200, selectedSize: 'L' }
-        ],
-        shippingAddress: {
-            name: 'Rahim Ahmed',
-            phone: '01800000000',
-            address: 'Flat 4B, King Tower',
-            city: 'Chittagong',
-            village: 'Agrabad',
-            postalCode: '4100'
-        }
-    },
-    {
-        id: 'ORD-003',
-        customer: 'Karim Ullah',
-        date: '2025-12-10',
-        total: 8500,
-        status: 'Shipped',
-        items: [
-            { id: '2', name: 'Smart Watch Pro', quantity: 1, price: 8500, selectedSize: '44mm' }
-        ],
-        shippingAddress: {
-            name: 'Karim Ullah',
-            phone: '01900000000',
-            address: 'Vill: Ruppur',
-            city: 'Sylhet',
-            village: 'Ruppur',
-            postalCode: '3100'
-        }
-    },
-    {
-        id: 'ORD-004',
-        customer: 'Jamal Khan',
-        date: '2025-12-09',
-        total: 1800,
-        status: 'Cancelled',
-        items: [
-            { id: '9', name: 'Yoga Mat Premium', quantity: 1, price: 1800 }
-        ],
-        shippingAddress: {
-            name: 'Jamal Khan',
-            phone: '01600000000',
-            address: '78 College Road',
-            city: 'Rajshahi',
-            village: 'Boalia',
-            postalCode: '6000'
-        }
-    },
-    {
-        id: 'ORD-005',
-        customer: 'Nusrat Jahan',
-        date: '2025-12-08',
-        total: 3200,
-        status: 'Processing',
-        items: [
-            { id: '3', name: 'Designer Leather Handbag', quantity: 1, price: 3200, selectedSize: 'M' }
-        ],
-        shippingAddress: {
-            name: 'Nusrat Jahan',
-            phone: '01500000000',
-            address: '15 Kazi Lane',
-            city: 'Khulna',
-            village: 'Sonadanga',
-            postalCode: '9000'
-        }
-    },
-];
-
 export const OrderProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const [orders, setOrders] = useState<Order[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
+    const { user, isAdmin } = useAuth();
 
-    useEffect(() => {
-        const storedOrders = localStorage.getItem(STORAGE_KEY);
-        if (storedOrders) {
-            try {
-                const parsed = JSON.parse(storedOrders);
-                // Migration for legacy data where items was a number
-                const migratedOrders = parsed.map((order: any) => {
-                    if (typeof order.items === 'number') {
-                        return {
-                            ...order,
-                            items: [{
-                                id: `legacy-${order.id}`,
-                                name: 'Legacy Item (Details Unavailable)',
-                                quantity: order.items,
-                                price: order.total ? (order.total / order.items) : 0,
-                                selectedSize: undefined
-                            }]
-                        };
-                    }
-                    return order;
-                });
-                setOrders(migratedOrders);
-            } catch (error) {
-                console.error('Failed to parse orders:', error);
-                setOrders(INITIAL_ORDERS);
-            }
-        } else {
-            setOrders(INITIAL_ORDERS);
+    const fetchOrders = async () => {
+        if (!user) {
+            setOrders([]);
+            setIsLoading(false);
+            return;
         }
-    }, []);
+
+        try {
+            setIsLoading(true);
+
+            let query = (supabase as any)
+                .from('orders')
+                .select(`
+                    id,
+                    user_id,
+                    created_at,
+                    status,
+                    final_amount,
+                    shipping_address_snapshot,
+                    payment_method,
+                    profiles:user_id ( full_name, email ),
+                    order_items (
+                        id,
+                        product_name,
+                        quantity,
+                        price,
+                        variant_id
+                    )
+                `)
+                .order('created_at', { ascending: false });
+
+            // If not admin, only show own orders
+            if (!isAdmin) {
+                query = query.eq('user_id', user.id);
+            }
+
+            const { data, error } = await query;
+
+            if (error) throw error;
+
+            if (data) {
+                const mappedOrders: Order[] = data.map((o: any) => ({
+                    id: o.id,
+                    user_id: o.user_id,
+                    customer: o.shipping_address_snapshot?.name || o.profiles?.full_name || 'Guest',
+                    date: new Date(o.created_at).toISOString().split('T')[0],
+                    total: o.final_amount,
+                    status: o.status,
+                    shippingAddress: o.shipping_address_snapshot || {},
+                    paymentMethod: o.payment_method,
+                    items: o.order_items?.map((item: any) => ({
+                        id: item.id,
+                        name: item.product_name,
+                        quantity: item.quantity,
+                        price: item.price,
+                        selectedSize: item.variant_id ? 'Variant' : undefined
+                    })) || []
+                }));
+                setOrders(mappedOrders);
+            }
+        } catch (error) {
+            console.error('Failed to fetch orders:', error);
+            toast({
+                title: "Error fetching orders",
+                description: "Could not load orders from database.",
+                variant: "destructive"
+            });
+        } finally {
+            setIsLoading(false);
+        }
+    };
 
     useEffect(() => {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(orders));
-    }, [orders]);
+        fetchOrders();
+    }, [user, isAdmin]);
 
-    const addOrder = (order: Order) => {
-        setOrders(prev => [order, ...prev]);
+    const refreshOrders = async () => {
+        await fetchOrders();
     };
 
-    const updateOrderStatus = (orderId: string, status: Order['status']) => {
-        setOrders(prev => prev.map(o => o.id === orderId ? { ...o, status } : o));
+    const addOrder = async (orderData: Omit<Order, 'id' | 'date' | 'status'>): Promise<string | null> => {
+        try {
+            if (!user) throw new Error("User must be logged in to place order");
+
+            // 1. Insert Order
+            // Generate a custom ID like SV-TIMESTAMP-RANDOM
+            const customId = `SV${Date.now()}${Math.floor(Math.random() * 1000)}`;
+
+            const { error: orderError } = await (supabase as any)
+                .from('orders')
+                .insert({
+                    id: customId,
+                    user_id: user.id,
+                    total_amount: orderData.total, // For now assuming total = final
+                    final_amount: orderData.total,
+                    status: 'Processing', // Default
+                    shipping_address_snapshot: orderData.shippingAddress,
+                    payment_method: orderData.paymentMethod || 'COD'
+                });
+
+            if (orderError) throw orderError;
+
+            // 2. Insert Order Items
+            if (orderData.items.length > 0) {
+                const itemsToInsert = orderData.items.map(item => ({
+                    order_id: customId,
+                    product_id: item.productId, // Ensure passed from cart or undefined
+                    product_name: item.name,
+                    quantity: item.quantity,
+                    price: item.price
+                }));
+
+                const { error: itemsError } = await (supabase as any)
+                    .from('order_items')
+                    .insert(itemsToInsert);
+
+                if (itemsError) throw itemsError;
+            }
+
+            toast({ title: "Order Placed", description: `Order ${customId} created successfully.` });
+            await fetchOrders();
+            return customId;
+
+        } catch (error: any) {
+            console.error("Order creation failed:", error);
+            toast({
+                title: "Order Failed",
+                description: error.message,
+                variant: "destructive"
+            });
+            return null;
+        }
     };
 
-    const deleteOrder = (orderId: string) => {
-        setOrders(prev => prev.filter(o => o.id !== orderId));
+    const updateOrderStatus = async (orderId: string, status: Order['status']) => {
+        try {
+            const { error } = await (supabase as any)
+                .from('orders')
+                .update({ status })
+                .eq('id', orderId);
+
+            if (error) throw error;
+
+            setOrders(prev => prev.map(o => o.id === orderId ? { ...o, status } : o));
+            toast({ title: "Status Updated", description: `Order marked as ${status}` });
+
+        } catch (error: any) {
+            console.error("Failed to update status:", error);
+            toast({
+                title: "Update Failed",
+                description: error.message,
+                variant: "destructive"
+            });
+        }
+    };
+
+    const deleteOrder = async (orderId: string) => {
+        try {
+            const { error } = await (supabase as any)
+                .from('orders')
+                .delete()
+                .eq('id', orderId);
+
+            if (error) throw error;
+
+            setOrders(prev => prev.filter(o => o.id !== orderId));
+            toast({ title: "Order Deleted" });
+
+        } catch (error: any) {
+            console.error("Failed to delete order:", error);
+            toast({
+                title: "Delete Failed",
+                description: error.message,
+                variant: "destructive"
+            });
+        }
     };
 
     const getStats = () => {
@@ -204,7 +219,15 @@ export const OrderProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     };
 
     return (
-        <OrderContext.Provider value={{ orders, addOrder, updateOrderStatus, deleteOrder, getStats }}>
+        <OrderContext.Provider value={{
+            orders,
+            isLoading,
+            addOrder,
+            updateOrderStatus,
+            deleteOrder,
+            getStats,
+            refreshOrders
+        }}>
             {children}
         </OrderContext.Provider>
     );

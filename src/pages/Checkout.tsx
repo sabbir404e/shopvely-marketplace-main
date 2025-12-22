@@ -77,30 +77,31 @@ const Checkout: React.FC = () => {
       setTransactionId('');
     }
 
-    const newOrderId = `SV${Date.now().toString().slice(-8)}`;
-
-    // Create new order
-    const newOrder = {
-      id: newOrderId,
+    // Create new order payload
+    const orderPayload = {
       customer: shippingInfo.name,
       customerId: user?.id,
-      date: new Date().toISOString().split('T')[0],
       total: finalTotal,
-      status: 'Processing' as const,
       items: items.map(item => ({
         id: item.product.id,
         name: item.product.name,
         quantity: item.quantity,
         price: item.product.price,
-        selectedSize: item.selectedSize
+        selectedSize: item.selectedSize,
+        productId: item.product.id // Ensure productId is passed
       })),
-      shippingAddress: shippingInfo
+      shippingAddress: shippingInfo,
+      paymentMethod: paymentMethod // Pass payment method
     };
 
-    addOrder(newOrder);
-    setOrderId(newOrderId);
-    setOrderPlaced(true);
-    clearCart();
+    const createdOrderId = await addOrder(orderPayload);
+
+    if (createdOrderId) {
+      setOrderId(createdOrderId);
+      setOrderPlaced(true);
+      clearCart();
+    }
+
     setIsProcessing(false);
   };
 
