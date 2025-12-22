@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import { Heart, ShoppingCart, Minus, Plus, Star, Truck, Shield, RotateCcw, ChevronLeft } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import Header from '@/components/layout/Header';
@@ -64,9 +64,11 @@ const ProductDetail: React.FC = () => {
     addToCart(product, quantity, selectedSize);
   };
 
+  const navigate = useNavigate();
+
   const handleBuyNow = () => {
     addToCart(product, quantity, selectedSize);
-    window.location.href = '/cart';
+    navigate('/cart');
   };
 
   const handleWishlist = () => {

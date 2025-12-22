@@ -60,7 +60,7 @@ const HeroSection: React.FC = () => {
           <div className="flex">
             {slides.map((slide) => (
               <div key={slide.id} className="flex-[0_0_100%] min-w-0">
-                <div className={cn("bg-gradient-to-br h-[350px] lg:h-[450px] relative overflow-hidden", slide.bgClass)}>
+                <div className={cn("bg-gradient-to-br min-h-[350px] lg:h-[450px] relative overflow-hidden", slide.bgClass)}>
                   <div className="container-main h-full py-8 lg:py-12">
                     <div className="grid lg:grid-cols-2 gap-6 items-center h-full">
                       {/* Content */}
@@ -95,7 +95,7 @@ const HeroSection: React.FC = () => {
                       </div>
 
                       {/* Hero Image */}
-                      <div className="relative hidden lg:block">
+                      <div className="relative block mt-6 lg:mt-0">
                         <div className="relative z-10">
                           <img
                             src={slide.image}

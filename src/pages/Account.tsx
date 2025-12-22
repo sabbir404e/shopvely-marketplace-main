@@ -86,8 +86,8 @@ const Account: React.FC = () => {
     }
 
     // Minimum withdraw check (Optional: 10 TK = 100 Points)
-    if (points < 100) {
-      toast({ title: "Minimum Withdraw", description: "Minimum withdrawal is 100 points (10 TK).", variant: "destructive" });
+    if (points < 1000) {
+      toast({ title: "Minimum Withdraw", description: "Minimum withdrawal is 1000 points (100 TK).", variant: "destructive" });
       return;
     }
 
@@ -246,7 +246,7 @@ const Account: React.FC = () => {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Star className="h-5 w-5 text-gold" />
-                  Loyalty Points
+                  SV Points
                 </CardTitle>
                 <CardDescription>Your reward balance</CardDescription>
               </CardHeader>
@@ -259,7 +259,7 @@ const Account: React.FC = () => {
                 </div>
                 <div className="mt-4 p-3 bg-muted rounded-lg mb-4">
                   <p className="text-xs text-muted-foreground text-center">
-                    10 points = ৳1. Minimum withdraw: 100 points.
+                    10 points = ৳1. Minimum withdraw: 1000 points.
                   </p>
                 </div>
                 <Dialog open={isWithdrawOpen} onOpenChange={setIsWithdrawOpen}>
@@ -271,7 +271,7 @@ const Account: React.FC = () => {
                   </DialogTrigger>
                   <DialogContent>
                     <DialogHeader>
-                      <DialogTitle>Withdraw Loyalty Points</DialogTitle>
+                      <DialogTitle>Withdraw SV Points</DialogTitle>
                       <DialogDescription>
                         Convert your points to cash. Rate: 10 Points = 1 BDT.
                       </DialogDescription>
@@ -283,7 +283,7 @@ const Account: React.FC = () => {
                           type="number"
                           value={withdrawAmount}
                           onChange={(e) => setWithdrawAmount(e.target.value)}
-                          placeholder="Min 100"
+                          placeholder="Min 1000"
                           max={profile?.loyalty_points}
                         />
                         {withdrawAmount && (

@@ -6,7 +6,7 @@ import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import { Button } from '@/components/ui/button';
 
-import abdulWadudImage from '@/assets/team/abdul_wadud.jpg';
+import abdulWadudImage from '@/assets/team/abdul_wadud_new.jpg';
 import sabbirHossainImage from '@/assets/team/sabbir_hossain.jpg';
 import abuSayeedImage from '@/assets/team/abu_sayeed_v2.jpg';
 import tusarAhmedNayeemImage from '@/assets/team/tusar_ahmed_nayeem.jpg';
