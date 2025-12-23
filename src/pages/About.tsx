@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { ShieldCheck, Truck, HeartHandshake, Trophy, Users, Target, ArrowRight } from 'lucide-react';
+import { ShieldCheck, Truck, HeartHandshake, Trophy, Users, Target, ArrowRight, Facebook } from 'lucide-react';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import { Button } from '@/components/ui/button';
@@ -64,6 +64,7 @@ const About: React.FC = () => {
       name: 'Abdul Wadud',
       role: t('about.team.roles.ceo'),
       image: abdulWadudImage,
+      facebook: 'https://www.facebook.com/wadud285',
       details: [
         'Bachelor Degree & Post Graduation Completed from Rajshahi College, Department of Management, Rajshahi',
         'Contact 01796952446'
@@ -73,6 +74,7 @@ const About: React.FC = () => {
       name: 'Md. Sabbir Hossain',
       role: t('about.team.roles.cto'),
       image: sabbirHossainImage,
+      facebook: 'https://www.facebook.com/MdSabbirHossain.CSE.PUST',
       details: [
         'Studying CSE at Pabna University of Science and Technology, Pabna',
         'Contact 01786981164'
@@ -82,6 +84,7 @@ const About: React.FC = () => {
       name: 'Md. Abu Sayeed',
       role: t('about.team.roles.brandAmbassador'),
       image: abuSayeedImage,
+      facebook: 'https://www.facebook.com/sayeed.alip',
       details: [
         'Studying Islamic History at New Government Degree College, Rajshahi',
         'Contact 0 1317445169'
@@ -91,6 +94,7 @@ const About: React.FC = () => {
       name: 'Tusar Ahmed Nayeem',
       role: t('about.team.roles.marketingExecutive'),
       image: tusarAhmedNayeemImage,
+      facebook: 'https://www.facebook.com/tusar.ahmed.nayeem',
       details: [
         'Studying Chemistry at Jagannath University, Dhaka',
         'Contact 01859861241'
@@ -100,6 +104,7 @@ const About: React.FC = () => {
       name: 'Shariar Hossain Sun',
       role: t('about.team.roles.marketingExecutive'),
       image: shariarHossainSunImage,
+      facebook: 'https://www.facebook.com/sunsingra',
       details: [
         'Studying Diploma in Electrical Engineering at Chapainawabganj Polytechnic Institute, Chapainawabganj',
         'Contact 01317448654'
@@ -109,6 +114,7 @@ const About: React.FC = () => {
       name: 'Md. Azom Hossain Babul',
       role: t('about.team.roles.marketingExecutive'),
       image: mdAzomHossainImage,
+      facebook: 'https://www.facebook.com/mdazomhossin.babul.31',
       details: [
         'Studying Diploma in Civil Engineering at Bogura Polytechnic Institute, Bogura',
         'Contact 01744945758'
@@ -233,6 +239,12 @@ const About: React.FC = () => {
                   {member.details && member.details.map((detail, i) => (
                     <p key={i} className="text-muted-foreground text-xs mt-1">{detail}</p>
                   ))}
+                  {/* @ts-ignore */}
+                  {member.facebook && (
+                    <a href={member.facebook} target="_blank" rel="noopener noreferrer" className="block mt-3 text-sm font-medium text-blue-600 hover:text-blue-800 hover:underline">
+                      Facebook
+                    </a>
+                  )}
                 </div>
               ))}
             </div>

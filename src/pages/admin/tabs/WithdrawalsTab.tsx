@@ -25,23 +25,46 @@ const WithdrawalsTab: React.FC = () => {
 
     const fetchRequests = async () => {
         setLoading(true);
-        // Supabase select with join manually for now if types cause issues
-        // Assuming user_id is FK.
-        const { data, error } = await supabase
-            .from('withdraw_requests' as any)
-            .select(`
-                *,
-                profiles:user_id (full_name, phone)
-            `)
-            .order('created_at', { ascending: false });
+        try {
+            // 1. Fetch Requests
+            const { data: requestsData, error: requestError } = await supabase
+                .from('withdraw_requests' as any)
+                .select('*')
+                .order('created_at', { ascending: false });
 
-        if (error) {
-            console.error(error);
-            toast({ title: "Error", description: "Failed to fetch withdraw requests", variant: "destructive" });
-        } else {
-            setRequests(data || []);
+            if (requestError) throw requestError;
+
+            if (requestsData && requestsData.length > 0) {
+                // 2. Fetch Profiles for these requests
+                const userIds = requestsData.map((r: any) => r.user_id);
+                const { data: profilesData, error: profileError } = await supabase
+                    .from('profiles')
+                    .select('id, full_name, phone')
+                    .in('id', userIds);
+
+                if (profileError) throw profileError;
+
+                // 3. Merge Data
+                const mergedData = requestsData.map((req: any) => ({
+                    ...req,
+                    profiles: profilesData?.find((p: any) => p.id === req.user_id) || { full_name: 'Unknown', phone: '' }
+                }));
+
+                setRequests(mergedData);
+            } else {
+                setRequests([]);
+            }
+
+        } catch (error: any) {
+            console.error("Error fetching requests:", error);
+            toast({
+                title: "Error",
+                description: error.message || "Failed to fetch withdraw requests",
+                variant: "destructive"
+            });
+        } finally {
+            setLoading(false);
         }
-        setLoading(false);
     };
 
     const handleApprove = async (id: string, userId: string, points: number) => {

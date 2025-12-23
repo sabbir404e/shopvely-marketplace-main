@@ -10,6 +10,7 @@ interface Profile {
   loyalty_points: number;
   referral_code: string | null;
   referred_by_user_id: string | null;
+  role: string; // Add role
 }
 
 interface AuthContextType {
@@ -46,23 +47,34 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       .maybeSingle();
 
     if (data) {
-      setProfile(data as unknown as Profile);
+      const profileData = data as unknown as Profile;
+      setProfile(profileData);
+      return profileData;
     }
+    return null;
   };
 
-  const checkUserRole = async (userId: string) => {
+  const checkUserRole = async (userId: string, profileData?: Profile) => {
     console.log('Checking role for:', userId);
 
-    // Check for admin
+    // 1. Check Profile directly if available
+    if (profileData && profileData.role === 'admin') {
+      console.log('User IS admin (from profile)');
+      setIsAdmin(true);
+      setUserRole('admin');
+      return;
+    }
+
+    // 2. Fallback to RPC for extra security or if profile not passed
     const { data: adminData, error: adminError } = await supabase.rpc('has_role', {
       _user_id: userId,
       _role: 'admin'
     });
 
-    console.log('Admin Check Result:', { adminData, adminError });
+    console.log('Admin Check Result (RPC):', { adminData, adminError });
 
     if (adminData) {
-      console.log('User IS admin');
+      console.log('User IS admin (from RPC)');
       setIsAdmin(true);
       setUserRole('admin');
       return;
@@ -75,7 +87,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     // Check for manager
     const { data: managerData } = await supabase.rpc('has_role', {
       _user_id: userId,
-      _role: 'manager'
+      _role: 'manager' as any
     });
 
     if (managerData) {
@@ -98,9 +110,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
         // Defer Supabase calls with setTimeout to prevent deadlock
         if (session?.user) {
-          setTimeout(() => {
-            fetchProfile(session.user.id);
-            checkUserRole(session.user.id);
+          setTimeout(async () => {
+            const profileData = await fetchProfile(session.user.id);
+            checkUserRole(session.user.id, profileData || undefined);
           }, 0);
         } else {
           setProfile(null);
@@ -112,13 +124,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     );
 
     // THEN check for existing session
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
       setSession(session);
       setUser(session?.user ?? null);
 
       if (session?.user) {
-        fetchProfile(session.user.id);
-        checkUserRole(session.user.id);
+        const profileData = await fetchProfile(session.user.id);
+        checkUserRole(session.user.id, profileData || undefined);
       }
       setLoading(false);
     });

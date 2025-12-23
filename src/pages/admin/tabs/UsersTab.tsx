@@ -21,6 +21,7 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useToast } from "@/components/ui/use-toast";
+import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/context/AuthContext';
 
 // Mock Data Interface
@@ -36,38 +37,81 @@ const UsersTab: React.FC = () => {
     const { toast } = useToast();
     const { userRole } = useAuth();
     const [searchTerm, setSearchTerm] = useState('');
+    const [users, setUsers] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
 
-    // Initial Mock Data
-    const [users, setUsers] = useState<UserData[]>([
-        { id: 1, name: 'Admin User', email: 'sabbirhossain8721@gmail.com', role: 'Admin', joined: '2025-01-01' },
-        { id: 2, name: 'Sabbir Hossain', email: 'sabbir@example.com', role: 'Customer', joined: '2025-11-15' },
-        { id: 3, name: 'Rahim Ahmed', email: 'rahim@example.com', role: 'Customer', joined: '2025-11-20' },
-        { id: 4, name: 'Manager User', email: 'manager@shopvely.com', role: 'Manager', joined: '2025-06-10' },
-        { id: 5, name: 'Karim Ullah', email: 'karim@example.com', role: 'Customer', joined: '2025-12-01' },
-    ]);
+    const fetchUsers = async () => {
+        try {
+            setLoading(true);
+            const { data, error } = await supabase
+                .from('profiles')
+                .select('*')
+                .order('created_at', { ascending: false });
 
-    const filteredUsers = users.filter(user =>
-        user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        user.email.toLowerCase().includes(searchTerm.toLowerCase())
-    );
-
-    const handleDelete = (id: number) => {
-        if (confirm('Are you sure you want to delete this user?')) {
-            setUsers(users.filter(user => user.id !== id));
+            if (error) throw error;
+            setUsers(data || []);
+        } catch (error: any) {
+            console.error("Error fetching users:", error);
             toast({
-                title: "User Deleted",
-                description: "User account has been removed.",
+                title: "Error",
+                description: error.message || "Failed to load users",
                 variant: "destructive"
             });
+        } finally {
+            setLoading(false);
         }
     };
 
-    const handleRoleChange = (id: number, newRole: 'Admin' | 'Customer' | 'Manager') => {
-        setUsers(users.map(user => user.id === id ? { ...user, role: newRole } : user));
-        toast({
-            title: "Role Updated",
-            description: `User role changed to ${newRole}.`,
-        });
+    React.useEffect(() => {
+        fetchUsers();
+    }, []);
+
+    const filteredUsers = users.filter(user =>
+        (user.full_name || 'User').toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (user.email || '').toLowerCase().includes(searchTerm.toLowerCase())
+    );
+
+    const handleDelete = async (id: string) => {
+        if (confirm('Are you sure you want to delete this user?')) {
+            try {
+                const { error } = await supabase
+                    .from('profiles')
+                    .delete()
+                    .eq('id', id);
+
+                if (error) throw error;
+
+                setUsers(users.filter(user => user.id !== id));
+                toast({
+                    title: "User Deleted",
+                    description: "User profile has been removed.",
+                    variant: "destructive"
+                });
+            } catch (error) {
+                console.error("Error deleting user:", error);
+                toast({ title: "Error", description: "Failed to delete user", variant: "destructive" });
+            }
+        }
+    };
+
+    const handleRoleChange = async (id: string, newRole: string) => {
+        try {
+            const { error } = await supabase
+                .from('profiles')
+                .update({ role: newRole } as any)
+                .eq('id', id);
+
+            if (error) throw error;
+
+            setUsers(users.map(user => user.id === id ? { ...user, role: newRole } : user));
+            toast({
+                title: "Role Updated",
+                description: `User role changed to ${newRole}.`,
+            });
+        } catch (error) {
+            console.error("Error updating role:", error);
+            toast({ title: "Error", description: "Failed to update role", variant: "destructive" });
+        }
     };
 
     return (
@@ -78,6 +122,9 @@ const UsersTab: React.FC = () => {
                         <CardTitle>Users</CardTitle>
                         <CardDescription>Manage user access and roles</CardDescription>
                     </div>
+                    <Button variant="outline" onClick={fetchUsers} disabled={loading}>
+                        Refresh List
+                    </Button>
                 </div>
             </CardHeader>
             <CardContent>
@@ -105,7 +152,13 @@ const UsersTab: React.FC = () => {
                             </TableRow>
                         </TableHeader>
                         <TableBody>
-                            {filteredUsers.length === 0 ? (
+                            {loading ? (
+                                <TableRow>
+                                    <TableCell colSpan={5} className="text-center h-24 text-muted-foreground">
+                                        Loading users...
+                                    </TableCell>
+                                </TableRow>
+                            ) : filteredUsers.length === 0 ? (
                                 <TableRow>
                                     <TableCell colSpan={5} className="text-center h-24 text-muted-foreground">
                                         No users found matching your search.
@@ -119,18 +172,20 @@ const UsersTab: React.FC = () => {
                                                 <div className="h-8 w-8 bg-muted rounded-full flex items-center justify-center">
                                                     <User className="h-4 w-4 text-muted-foreground" />
                                                 </div>
-                                                {user.name}
+                                                {user.full_name || 'No Name'}
                                             </div>
                                         </TableCell>
-                                        <TableCell>{user.email}</TableCell>
+                                        <TableCell>{user.email || 'N/A'}</TableCell>
                                         <TableCell>
-                                            <Badge variant={user.role === 'Admin' ? 'destructive' : user.role === 'Manager' ? 'default' : 'secondary'}>
-                                                {user.role === 'Admin' && <ShieldCheck className="w-3 h-3 mr-1" />}
-                                                {user.role === 'Manager' && <Shield className="w-3 h-3 mr-1" />}
-                                                {user.role}
+                                            <Badge variant={user.role === 'admin' ? 'destructive' : user.role === 'manager' ? 'default' : 'secondary'}>
+                                                {user.role === 'admin' && <ShieldCheck className="w-3 h-3 mr-1" />}
+                                                {user.role === 'manager' && <Shield className="w-3 h-3 mr-1" />}
+                                                {user.role || 'customer'}
                                             </Badge>
                                         </TableCell>
-                                        <TableCell>{user.joined}</TableCell>
+                                        <TableCell>
+                                            {user.created_at ? new Date(user.created_at).toLocaleDateString() : 'N/A'}
+                                        </TableCell>
                                         <TableCell className="text-right">
                                             {userRole === 'admin' && (
                                                 <DropdownMenu>
@@ -142,16 +197,19 @@ const UsersTab: React.FC = () => {
                                                     </DropdownMenuTrigger>
                                                     <DropdownMenuContent align="end">
                                                         <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                                                        <DropdownMenuItem onClick={() => navigator.clipboard.writeText(user.email)}>
+                                                        <DropdownMenuItem onClick={() => navigator.clipboard.writeText(user.email || '')}>
                                                             Copy Email
                                                         </DropdownMenuItem>
                                                         <DropdownMenuSeparator />
                                                         <DropdownMenuLabel>Change Role</DropdownMenuLabel>
 
-                                                        <DropdownMenuItem onClick={() => handleRoleChange(user.id, 'Manager')}>
+                                                        <DropdownMenuItem onClick={() => handleRoleChange(user.id, 'admin')}>
+                                                            Make Admin
+                                                        </DropdownMenuItem>
+                                                        <DropdownMenuItem onClick={() => handleRoleChange(user.id, 'manager')}>
                                                             Make Manager
                                                         </DropdownMenuItem>
-                                                        <DropdownMenuItem onClick={() => handleRoleChange(user.id, 'Customer')}>
+                                                        <DropdownMenuItem onClick={() => handleRoleChange(user.id, 'customer')}>
                                                             Make Customer
                                                         </DropdownMenuItem>
                                                         <DropdownMenuSeparator />

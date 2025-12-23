@@ -8,6 +8,7 @@ import { toast } from '@/hooks/use-toast';
 import { Badge } from '@/components/ui/badge';
 import { useProducts } from '@/context/ProductContext';
 import { useAuth } from '@/context/AuthContext';
+import { supabase } from '@/integrations/supabase/client';
 
 export interface Coupon {
     id: string;
@@ -23,10 +24,8 @@ export interface Coupon {
 const DiscountsTab: React.FC = () => {
     const { products } = useProducts();
     const { userRole } = useAuth();
-    const [coupons, setCoupons] = useState<Coupon[]>(() => {
-        const saved = localStorage.getItem('shopvely-coupons');
-        return saved ? JSON.parse(saved) : [];
-    });
+    const [coupons, setCoupons] = useState<Coupon[]>([]);
+    const [loading, setLoading] = useState(true);
 
     const [newCoupon, setNewCoupon] = useState<{
         code: string;
@@ -40,11 +39,40 @@ const DiscountsTab: React.FC = () => {
         productIds: [],
     });
 
-    useEffect(() => {
-        localStorage.setItem('shopvely-coupons', JSON.stringify(coupons));
-    }, [coupons]);
+    const fetchCoupons = async () => {
+        try {
+            setLoading(true);
+            const { data, error } = await (supabase as any)
+                .from('coupons')
+                .select('*')
+                .order('created_at', { ascending: false });
 
-    const handleAddCoupon = (e: React.FormEvent) => {
+            if (error) throw error;
+
+            if (data) {
+                const mappedCoupons: Coupon[] = data.map((c: any) => ({
+                    id: c.id,
+                    code: c.code,
+                    percentage: c.value,
+                    expiryDate: c.end_date ? c.end_date.split('T')[0] : '',
+                    isActive: c.is_active,
+                    productIds: c.product_ids || []
+                }));
+                setCoupons(mappedCoupons);
+            }
+        } catch (error) {
+            console.error("Error fetching coupons:", error);
+            toast({ title: "Error", description: "Failed to load coupons", variant: "destructive" });
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        fetchCoupons();
+    }, []);
+
+    const handleAddCoupon = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!newCoupon.code || !newCoupon.percentage || !newCoupon.expiryDate) {
             toast({
@@ -65,35 +93,68 @@ const DiscountsTab: React.FC = () => {
             return;
         }
 
-        const coupon: Coupon = {
-            id: Date.now().toString(),
-            code: newCoupon.code.toUpperCase(),
-            percentage,
-            expiryDate: newCoupon.expiryDate,
-            isActive: true,
-            productIds: newCoupon.productIds.length > 0 ? newCoupon.productIds : undefined,
-        };
+        try {
+            const { error } = await (supabase as any)
+                .from('coupons')
+                .insert({
+                    code: newCoupon.code.toUpperCase(),
+                    value: percentage,
+                    end_date: new Date(newCoupon.expiryDate).toISOString(),
+                    type: 'percentage',
+                    is_active: true,
+                    product_ids: newCoupon.productIds.length > 0 ? newCoupon.productIds : null
+                });
 
-        setCoupons([...coupons, coupon]);
-        setNewCoupon({ code: '', percentage: '', expiryDate: '', productIds: [] });
-        toast({
-            title: "Success",
-            description: "Coupon created successfully",
-        });
+            if (error) throw error;
+
+            toast({
+                title: "Success",
+                description: "Coupon created successfully",
+            });
+
+            setNewCoupon({ code: '', percentage: '', expiryDate: '', productIds: [] });
+            fetchCoupons();
+
+        } catch (error: any) {
+            console.error("Error adding coupon:", error);
+            toast({ title: "Error", description: error.message, variant: "destructive" });
+        }
     };
 
-    const handleDeleteCoupon = (id: string) => {
-        setCoupons(coupons.filter(c => c.id !== id));
-        toast({
-            title: "Success",
-            description: "Coupon deleted",
-        });
+    const handleDeleteCoupon = async (id: string) => {
+        if (!confirm("Are you sure you want to delete this coupon?")) return;
+        try {
+            const { error } = await (supabase as any)
+                .from('coupons')
+                .delete()
+                .eq('id', id);
+
+            if (error) throw error;
+
+            setCoupons(coupons.filter(c => c.id !== id));
+            toast({ title: "Success", description: "Coupon deleted" });
+        } catch (error: any) {
+            console.error("Error deleting coupon:", error);
+            toast({ title: "Error", description: error.message, variant: "destructive" });
+        }
     };
 
-    const toggleStatus = (id: string) => {
-        setCoupons(coupons.map(c =>
-            c.id === id ? { ...c, isActive: !c.isActive } : c
-        ));
+    const toggleStatus = async (id: string, currentStatus: boolean) => {
+        try {
+            const { error } = await (supabase as any)
+                .from('coupons')
+                .update({ is_active: !currentStatus })
+                .eq('id', id);
+
+            if (error) throw error;
+
+            setCoupons(coupons.map(c =>
+                c.id === id ? { ...c, isActive: !c.isActive } : c
+            ));
+        } catch (error: any) {
+            console.error("Error updating coupon:", error);
+            toast({ title: "Error", description: error.message, variant: "destructive" });
+        }
     };
 
     const toggleProductSelection = (productId: string) => {
@@ -187,7 +248,11 @@ const DiscountsTab: React.FC = () => {
                             </TableRow>
                         </TableHeader>
                         <TableBody>
-                            {coupons.map((coupon) => (
+                            {loading ? (
+                                <TableRow>
+                                    <TableCell colSpan={5} className="text-center text-muted-foreground">Loading...</TableCell>
+                                </TableRow>
+                            ) : coupons.map((coupon) => (
                                 <TableRow key={coupon.id}>
                                     <TableCell className="font-medium">{coupon.code}</TableCell>
                                     <TableCell>{coupon.percentage}%</TableCell>
@@ -200,7 +265,7 @@ const DiscountsTab: React.FC = () => {
                                         <Badge
                                             variant={coupon.isActive ? "default" : "secondary"}
                                             className="cursor-pointer"
-                                            onClick={() => toggleStatus(coupon.id)}
+                                            onClick={() => toggleStatus(coupon.id, coupon.isActive)}
                                         >
                                             {coupon.isActive ? "Active" : "Inactive"}
                                         </Badge>
@@ -216,7 +281,7 @@ const DiscountsTab: React.FC = () => {
                                     </TableCell>
                                 </TableRow>
                             ))}
-                            {coupons.length === 0 && (
+                            {!loading && coupons.length === 0 && (
                                 <TableRow>
                                     <TableCell colSpan={5} className="text-center text-muted-foreground">
                                         No coupons created yet

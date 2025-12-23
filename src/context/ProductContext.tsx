@@ -76,15 +76,108 @@ export const ProductProvider: React.FC<{ children: React.ReactNode }> = ({ child
     };
 
     const addProduct = async (product: Product) => {
-        console.warn("Direct addProduct not implemented fully. Use seed or Admin panel.");
+        try {
+            const dbProduct = {
+                name: product.name,
+                slug: product.name.toLowerCase().replace(/[^a-z0-9]+/g, '-') + '-' + Date.now().toString().slice(-4),
+                description: product.description,
+                base_price: product.originalPrice || product.price,
+                discount_price: product.price < (product.originalPrice || product.price) ? product.price : null,
+                stock: product.stock,
+                status: 'published',
+                // We'd ideally look up category ID, but for now we might leave null or implement dynamic lookup if needed.
+                // For simplicity in this fix, we assume category name matches or we add better validaton later.
+                // A better approach is passing category_id, but the UI passes name. 
+                // We'll try to find it:
+                thumbnail_url: product.images[0],
+                gallery_urls: product.images,
+                is_new: product.isNew,
+                is_featured: false,
+                brand: product.brand,
+                sizes: product.sizes
+            };
+
+            // Attempt to find category ID by name
+            const { data: catData } = await (supabase as any)
+                .from('categories')
+                .select('id')
+                .eq('name', product.category)
+                .maybeSingle();
+
+            if (catData) {
+                (dbProduct as any).category_id = catData.id;
+            }
+
+            const { data, error } = await (supabase as any)
+                .from('products')
+                .insert(dbProduct)
+                .select()
+                .single();
+
+            if (error) throw error;
+
+            toast({ title: "Success", description: "Product added to database." });
+            await fetchProducts();
+        } catch (error: any) {
+            console.error("Add Product Error:", error);
+            toast({ title: "Error", description: error.message || "Failed to add product", variant: "destructive" });
+        }
     };
 
     const updateProduct = async (productId: string, data: Partial<Product>) => {
-        console.warn("Direct updateProduct not implemented fully.");
+        try {
+            const updates: any = {};
+            if (data.name) updates.name = data.name;
+            if (data.description) updates.description = data.description;
+            if (data.stock !== undefined) updates.stock = data.stock;
+            if (data.price) updates.discount_price = data.price;
+            if (data.originalPrice) updates.base_price = data.originalPrice;
+            if (data.images) {
+                updates.thumbnail_url = data.images[0];
+                updates.gallery_urls = data.images;
+            }
+            if (data.brand) updates.brand = data.brand;
+
+            // If category changed, look up new ID
+            if (data.category) {
+                const { data: catData } = await (supabase as any)
+                    .from('categories')
+                    .select('id')
+                    .eq('name', data.category)
+                    .maybeSingle();
+                if (catData) updates.category_id = catData.id;
+            }
+
+            const { error } = await (supabase as any)
+                .from('products')
+                .update(updates)
+                .eq('id', productId);
+
+            if (error) throw error;
+
+            toast({ title: "Success", description: "Product updated." });
+            await fetchProducts();
+        } catch (error: any) {
+            console.error("Update Product Error:", error);
+            toast({ title: "Error", description: error.message || "Failed to update product", variant: "destructive" });
+        }
     };
 
     const deleteProduct = async (productId: string) => {
-        console.warn("Direct deleteProduct not implemented fully.");
+        try {
+            const { error } = await (supabase as any)
+                .from('products')
+                .delete()
+                .eq('id', productId);
+
+            if (error) throw error;
+
+            toast({ title: "Success", description: "Product deleted." });
+            await fetchProducts();
+        } catch (error: any) {
+            console.error("Delete Product Error:", error);
+            toast({ title: "Error", description: error.message || "Failed to delete product", variant: "destructive" });
+        }
     };
 
     const getProduct = (productId: string) => {
