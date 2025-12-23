@@ -25,6 +25,7 @@ import ShippingPolicy from "./pages/ShippingPolicy";
 import ReturnPolicy from "./pages/ReturnPolicy";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import TermsConditions from "./pages/TermsConditions";
+import DebugAuth from "./pages/DebugAuth";
 import Auth from "./pages/Auth";
 import Account from "./pages/Account";
 import AdminLayout from "./pages/admin/AdminLayout";
@@ -63,6 +64,8 @@ const App = () => (
                         <Route path="/terms" element={<TermsConditions />} />
                         <Route path="/auth" element={<Auth />} />
                         <Route path="/account" element={<Account />} />
+                        <Route path="/debug-auth" element={<DebugAuth />} />
+
 
                         {/* Admin Routes */}
                         <Route path="/admin" element={

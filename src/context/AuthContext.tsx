@@ -51,16 +51,25 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const checkUserRole = async (userId: string) => {
+    console.log('Checking role for:', userId);
+
     // Check for admin
-    const { data: adminData } = await supabase.rpc('has_role', {
+    const { data: adminData, error: adminError } = await supabase.rpc('has_role', {
       _user_id: userId,
       _role: 'admin'
     });
 
+    console.log('Admin Check Result:', { adminData, adminError });
+
     if (adminData) {
+      console.log('User IS admin');
       setIsAdmin(true);
       setUserRole('admin');
       return;
+    }
+
+    if (adminError) {
+      console.error('Error checking admin role:', adminError);
     }
 
     // Check for manager
@@ -75,6 +84,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       return;
     }
 
+    console.log('User is CUSTOMER');
     setIsAdmin(false);
     setUserRole('customer');
   };
@@ -119,43 +129,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, []);
 
   const signUp = async (email: string, password: string, fullName?: string, referralCode?: string) => {
-    // Admin bypass for generic testing email
-    if (email === 'admin@shopvely.com') {
-      const mockUser = {
-        id: 'admin-bypass-id',
-        email: email,
-        app_metadata: { role: 'admin' },
-        user_metadata: { full_name: 'Admin User' },
-        aud: 'authenticated',
-        created_at: new Date().toISOString(),
-        role: 'authenticated',
-        updated_at: new Date().toISOString()
-      } as unknown as User;
+    // Admin bypass removed
 
-      const mockSession = {
-        access_token: 'mock-token',
-        token_type: 'bearer',
-        expires_in: 3600,
-        refresh_token: 'mock-refresh',
-        user: mockUser
-      } as Session;
-
-      setUser(mockUser);
-      setSession(mockSession);
-      setIsAdmin(true);
-      setUserRole('admin');
-      setProfile({
-        id: 'admin-bypass-id',
-        full_name: 'Admin User',
-        phone: null,
-        avatar_url: null,
-        loyalty_points: 0,
-        referral_code: 'ADMIN123',
-        referred_by_user_id: null
-      });
-
-      return { error: null };
-    }
 
     let referredBy = null;
     if (referralCode) {
@@ -191,43 +166,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const signIn = async (email: string, password: string) => {
-    // Admin Bypass for sabbirhossain8721@gmail.com
-    if (email === 'sabbirhossain8721@gmail.com' && password === 'adminsv') {
-      const mockUser = {
-        id: 'admin-bypass-id',
-        email: email,
-        app_metadata: { role: 'admin' },
-        user_metadata: { full_name: 'Admin User' },
-        aud: 'authenticated',
-        created_at: new Date().toISOString(),
-        role: 'authenticated',
-        updated_at: new Date().toISOString()
-      } as unknown as User;
+    // Admin bypass removed
 
-      const mockSession = {
-        access_token: 'mock-token',
-        token_type: 'bearer',
-        expires_in: 3600,
-        refresh_token: 'mock-refresh',
-        user: mockUser
-      } as Session;
-
-      setUser(mockUser);
-      setSession(mockSession);
-      setIsAdmin(true);
-      setUserRole('admin');
-      setProfile({
-        id: 'admin-bypass-id',
-        full_name: 'Admin User',
-        phone: null,
-        avatar_url: null,
-        loyalty_points: 0,
-        referral_code: 'ADMIN123',
-        referred_by_user_id: null
-      });
-
-      return { error: null };
-    }
 
     const { error } = await supabase.auth.signInWithPassword({
       email,

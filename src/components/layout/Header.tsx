@@ -231,6 +231,12 @@ const Header: React.FC = () => {
                     </DropdownMenuItem>
                   )}
                   <DropdownMenuSeparator />
+                  <DropdownMenuItem asChild>
+                    <Link to="/debug-auth" className="cursor-pointer text-blue-500">
+                      <Shield className="h-4 w-4 mr-2" />
+                      Debug Permissions
+                    </Link>
+                  </DropdownMenuItem>
                   <DropdownMenuItem onClick={handleSignOut} className="cursor-pointer text-destructive">
                     <LogOut className="h-4 w-4 mr-2" />
                     {t('common.signOut')}
