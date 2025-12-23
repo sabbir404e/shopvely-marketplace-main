@@ -164,6 +164,7 @@
     "resetPasswordTitle": "Reset Password",
     "resetPasswordDesc": "Enter your email address and we'll send you a link to reset your password.",
     "sendResetLink": "Send Reset Link",
+    "referralCode": "Referral Code",
     "validation": {
       "validEmail": "Please enter a valid email address",
       "passwordLength": "Password must be at least 6 characters",

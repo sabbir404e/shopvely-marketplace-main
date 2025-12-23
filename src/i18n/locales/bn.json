@@ -164,6 +164,7 @@
     "resetPasswordTitle": "পাসওয়ার্ড রিসেট",
     "resetPasswordDesc": "আপনার ইমেইল দিন এবং আমরা আপনাকে পাসওয়ার্ড রিসেট করার লিংক পাঠাব।",
     "sendResetLink": "রিসেট লিংক পাঠান",
+    "referralCode": "রেফারেল কোড",
     "validation": {
       "validEmail": "অনুগ্রহ করে একটি সঠিক ইমেইল দিন",
       "passwordLength": "পাসওয়ার্ড কমপক্ষে ৬ অক্ষরের হতে হবে",

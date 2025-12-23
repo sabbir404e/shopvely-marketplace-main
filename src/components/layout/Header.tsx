@@ -36,16 +36,12 @@ const Header: React.FC = () => {
   const currentLanguage = i18n.language;
 
   // Derive categories dynamically from products
+  // Derive categories dynamically from products
   const categories = useMemo(() => {
-    const categoryNames = [...new Set(products.map(p => p.category))];
-    return categoryNames.map(name => {
-      const base = baseCategories.find(c => c.name === name);
-      const productCount = products.filter(p => p.category === name).length;
+    return baseCategories.map(category => {
+      const productCount = products.filter(p => p.category === category.name).length;
       return {
-        id: base?.id || name.toLowerCase().replace(/\s+/g, '-'),
-        name,
-        slug: base?.slug || name.toLowerCase().replace(/\s+/g, '-'),
-        image: base?.image || 'https://images.unsplash.com/photo-1472851294608-062f824d29cc?w=400',
+        ...category,
         productCount
       };
     });
