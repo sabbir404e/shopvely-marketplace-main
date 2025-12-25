@@ -6,7 +6,7 @@ import HeroSection from '@/components/home/HeroSection';
 import CategorySection from '@/components/home/CategorySection';
 import FeaturedProducts from '@/components/home/FeaturedProducts';
 
-import { useLocation } from 'react-router-dom';
+import { useLocation, Link } from 'react-router-dom';
 
 const Index: React.FC = () => {
   const { t } = useTranslation();
@@ -43,9 +43,9 @@ const Index: React.FC = () => {
                   {t('hero.joinLoyalty')}
                 </p>
                 <div className="flex gap-4">
-                  <a href="/account" className="inline-flex items-center justify-center px-6 py-3 bg-primary text-primary-foreground rounded-lg font-medium hover:bg-primary/90 transition-colors">
+                  <Link to="/auth?mode=signup" className="inline-flex items-center justify-center px-6 py-3 bg-primary text-primary-foreground rounded-lg font-medium hover:bg-primary/90 transition-colors">
                     {t('hero.joinNow')}
-                  </a>
+                  </Link>
                 </div>
               </div>
               {/* Decorative */}
