@@ -12,17 +12,30 @@ const CategorySection: React.FC = () => {
   // Derive categories dynamically from products
   const categories = useMemo(() => {
     const categoryNames = [...new Set(products.map(p => p.category))];
-    return categoryNames.map(name => {
-      const base = baseCategories.find(c => c.name === name);
-      const productCount = products.filter(p => p.category === name).length;
-      return {
-        id: base?.id || name.toLowerCase().replace(/\s+/g, '-'),
-        name,
-        slug: base?.slug || name.toLowerCase().replace(/\s+/g, '-'),
-        image: base?.image || 'https://images.unsplash.com/photo-1472851294608-062f824d29cc?w=400',
-        productCount
-      };
-    });
+    const derivedCategories = categoryNames
+      .filter(name => name !== 'Other' && name !== 'Uncategorized')
+      .map(name => {
+        const base = baseCategories.find(c => c.name === name);
+        const productCount = products.filter(p => p.category === name).length;
+        return {
+          id: base?.id || name.toLowerCase().replace(/\s+/g, '-'),
+          name,
+          slug: base?.slug || name.toLowerCase().replace(/\s+/g, '-'),
+          image: base?.image || 'https://images.unsplash.com/photo-1472851294608-062f824d29cc?w=400',
+          productCount
+        };
+      });
+
+    // Add "All Products" card at the beginning
+    const allProductsCard = {
+      id: 'all-products',
+      name: 'All Products',
+      slug: 'all-products',
+      image: 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=600', // Realistic store interior
+      productCount: products.length
+    };
+
+    return [allProductsCard, ...derivedCategories];
   }, [products]);
 
   return (
@@ -46,7 +59,7 @@ const CategorySection: React.FC = () => {
           {categories.map((category, index) => (
             <Link
               key={category.id}
-              to={`/shop?category=${category.slug}`}
+              to={category.slug === 'all-products' ? '/shop' : `/shop?category=${category.slug}`}
               className="group relative overflow-hidden rounded-xl aspect-square animate-fade-in"
               style={{ animationDelay: `${index * 50}ms` }}
             >
@@ -62,7 +75,9 @@ const CategorySection: React.FC = () => {
 
               {/* Content */}
               <div className="absolute bottom-0 left-0 right-0 p-4">
-                <h3 className="font-bold text-card text-lg">{t(`categories.${category.slug}`)}</h3>
+                <h3 className="font-bold text-card text-lg">
+                  {category.slug === 'all-products' ? t('hero.allProducts') : t(`categories.${category.slug}`)}
+                </h3>
                 <p className="text-card/70 text-sm">{category.productCount} {t('product.units')}</p>
               </div>
 

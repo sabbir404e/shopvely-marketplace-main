@@ -241,6 +241,23 @@ create table if not exists withdraw_requests (
 
 -- RLS Policies
 
+-- Helper Function: is_admin (SECURITY DEFINER to avoid RLS recursion)
+CREATE OR REPLACE FUNCTION public.is_admin() 
+RETURNS boolean 
+LANGUAGE plpgsql 
+SECURITY DEFINER 
+SET search_path = public
+AS $$
+BEGIN
+  RETURN EXISTS (
+    SELECT 1 
+    FROM profiles 
+    WHERE id = auth.uid() 
+    AND role = 'admin'
+  );
+END;
+$$;
+
 -- Enable RLS on all tables
 alter table profiles enable row level security;
 alter table categories enable row level security;
@@ -263,21 +280,32 @@ alter table withdraw_requests enable row level security;
 
 -- Helper block for policies
 -- Profiles
+-- Helper block for policies
+-- Profiles
 do $$ begin
+  -- 1. Read: Public (avoids recursion)
   if not exists (select from pg_policies where policyname = 'Public profiles are viewable by everyone' and tablename = 'profiles') then
     create policy "Public profiles are viewable by everyone" on profiles for select using (true);
   end if;
+  
+  -- 2. Insert: Self
   if not exists (select from pg_policies where policyname = 'Users can insert their own profile' and tablename = 'profiles') then
     create policy "Users can insert their own profile" on profiles for insert with check (auth.uid() = id);
   end if;
+  
+  -- 3. Update: Self
   if not exists (select from pg_policies where policyname = 'Users can update own profile' and tablename = 'profiles') then
     create policy "Users can update own profile" on profiles for update using (auth.uid() = id);
   end if;
-  if not exists (select from pg_policies where policyname = 'Admins can read all profiles' and tablename = 'profiles') then
-    create policy "Admins can read all profiles" on profiles for select using (exists (select 1 from profiles where id = auth.uid() and role = 'admin'));
-  end if;
+  
+  -- 4. Update: Admin (using is_admin)
   if not exists (select from pg_policies where policyname = 'Admins can update any profile' and tablename = 'profiles') then
-    create policy "Admins can update any profile" on profiles for update using (exists (select 1 from profiles where id = auth.uid() and role = 'admin'));
+    create policy "Admins can update any profile" on profiles for update using (is_admin());
+  end if;
+  
+  -- 5. Delete: Admin (using is_admin)
+  if not exists (select from pg_policies where policyname = 'Admins can delete any profile' and tablename = 'profiles') then
+    create policy "Admins can delete any profile" on profiles for delete using (is_admin());
   end if;
 end $$;
 
@@ -288,7 +316,7 @@ do $$ begin
   end if;
   if not exists (select from pg_policies where policyname = 'Admins can maintain categories' and tablename = 'categories') then
     create policy "Admins can maintain categories" on categories for all using (
-      exists (select 1 from profiles where id = auth.uid() and role = 'admin')
+      is_admin()
     );
   end if;
 end $$;
@@ -301,7 +329,7 @@ do $$ begin
   -- Add admin policy again to be sure
   if not exists (select from pg_policies where policyname = 'Admins can maintain products' and tablename = 'products') then
     create policy "Admins can maintain products" on products for all using (
-      exists (select 1 from profiles where id = auth.uid() and role = 'admin')
+      is_admin()
     );
   end if;
 end $$;
@@ -313,7 +341,7 @@ do $$ begin
   end if;
   if not exists (select from pg_policies where policyname = 'Admins can maintain product variants' and tablename = 'product_variants') then
     create policy "Admins can maintain product variants" on product_variants for all using (
-      exists (select 1 from profiles where id = auth.uid() and role = 'admin')
+      is_admin()
     );
   end if;
 end $$;
@@ -330,7 +358,7 @@ do $$ begin
     create policy "Users can update own cart" on carts for update using (user_id = auth.uid());
   end if;
   if not exists (select from pg_policies where policyname = 'Admins can view all carts' and tablename = 'carts') then
-    create policy "Admins can view all carts" on carts for select using (exists (select 1 from profiles where id = auth.uid() and role = 'admin'));
+    create policy "Admins can view all carts" on carts for select using (is_admin());
   end if;
 end $$;
 
@@ -349,7 +377,7 @@ do $$ begin
     create policy "Users can delete own cart items" on cart_items for delete using (cart_id in (select id from carts where user_id = auth.uid()));
   end if;
   if not exists (select from pg_policies where policyname = 'Admins can manage all cart items' and tablename = 'cart_items') then
-    create policy "Admins can manage all cart items" on cart_items for all using (exists (select 1 from profiles where id = auth.uid() and role = 'admin'));
+    create policy "Admins can manage all cart items" on cart_items for all using (is_admin());
   end if;
 end $$;
 
@@ -368,7 +396,7 @@ do $$ begin
     create policy "Users can delete own shipping addresses" on shipping_addresses for delete using (user_id = auth.uid());
   end if;
   if not exists (select from pg_policies where policyname = 'Admins can manage all shipping addresses' and tablename = 'shipping_addresses') then
-    create policy "Admins can manage all shipping addresses" on shipping_addresses for all using (exists (select 1 from profiles where id = auth.uid() and role = 'admin'));
+    create policy "Admins can manage all shipping addresses" on shipping_addresses for all using (is_admin());
   end if;
 end $$;
 
@@ -379,7 +407,7 @@ do $$ begin
   end if;
   if not exists (select from pg_policies where policyname = 'Admins can maintain coupons' and tablename = 'coupons') then
     create policy "Admins can maintain coupons" on coupons for all using (
-      exists (select 1 from profiles where id = auth.uid() and role = 'admin')
+      is_admin()
     );
   end if;
 end $$;
@@ -394,11 +422,11 @@ do $$ begin
   end if;
   if not exists (select from pg_policies where policyname = 'Admins can view all orders' and tablename = 'orders') then
     create policy "Admins can view all orders" on orders for select using (
-      exists (select 1 from profiles where id = auth.uid() and role = 'admin')
+      is_admin()
     );
   end if;
   if not exists (select from pg_policies where policyname = 'Admins can update all orders' and tablename = 'orders') then
-    create policy "Admins can update all orders" on orders for update using (exists (select 1 from profiles where id = auth.uid() and role = 'admin'));
+    create policy "Admins can update all orders" on orders for update using (is_admin());
   end if;
 end $$;
 
@@ -408,10 +436,10 @@ do $$ begin
     create policy "Users can view own order items" on order_items for select using (order_id in (select id from orders where user_id = auth.uid()));
   end if;
   if not exists (select from pg_policies where policyname = 'Admins can view all order items' and tablename = 'order_items') then
-    create policy "Admins can view all order items" on order_items for select using (exists (select 1 from profiles where id = auth.uid() and role = 'admin'));
+    create policy "Admins can view all order items" on order_items for select using (is_admin());
   end if;
   if not exists (select from pg_policies where policyname = 'Admins can insert order items' and tablename = 'order_items') then
-    create policy "Admins can insert order items" on order_items for insert with check (exists (select 1 from profiles where id = auth.uid() and role = 'admin'));
+    create policy "Admins can insert order items" on order_items for insert with check (is_admin());
   end if;
 end $$;
 
@@ -421,10 +449,10 @@ do $$ begin
     create policy "Users can view own payments" on payments for select using (order_id in (select id from orders where user_id = auth.uid()));
   end if;
   if not exists (select from pg_policies where policyname = 'Admins can view all payments' and tablename = 'payments') then
-    create policy "Admins can view all payments" on payments for select using (exists (select 1 from profiles where id = auth.uid() and role = 'admin'));
+    create policy "Admins can view all payments" on payments for select using (is_admin());
   end if;
   if not exists (select from pg_policies where policyname = 'Admins can insert payments' and tablename = 'payments') then
-    create policy "Admins can insert payments" on payments for insert with check (exists (select 1 from profiles where id = auth.uid() and role = 'admin'));
+    create policy "Admins can insert payments" on payments for insert with check (is_admin());
   end if;
 end $$;
 
@@ -453,7 +481,7 @@ do $$ begin
     create policy "Users can update own reviews" on reviews for update using (user_id = auth.uid());
   end if;
   if not exists (select from pg_policies where policyname = 'Admins can manage all reviews' and tablename = 'reviews') then
-    create policy "Admins can manage all reviews" on reviews for all using (exists (select 1 from profiles where id = auth.uid() and role = 'admin'));
+    create policy "Admins can manage all reviews" on reviews for all using (is_admin());
   end if;
 end $$;
 
@@ -464,7 +492,7 @@ do $$ begin
   end if;
   if not exists (select from pg_policies where policyname = 'Admins can maintain banners' and tablename = 'banners') then
     create policy "Admins can maintain banners" on banners for all using (
-      exists (select 1 from profiles where id = auth.uid() and role = 'admin')
+      is_admin()
     );
   end if;
 end $$;
@@ -473,7 +501,7 @@ end $$;
 do $$ begin
   if not exists (select from pg_policies where policyname = 'Admins can manage site settings' and tablename = 'site_settings') then
     create policy "Admins can manage site settings" on site_settings for all using (
-      exists (select 1 from profiles where id = auth.uid() and role = 'admin')
+      is_admin()
     );
   end if;
   
@@ -488,7 +516,7 @@ end $$;
 do $$ begin
   if not exists (select from pg_policies where policyname = 'Admins can view admin logs' and tablename = 'admin_logs') then
     create policy "Admins can view admin logs" on admin_logs for select using (
-      exists (select 1 from profiles where id = auth.uid() and role = 'admin')
+      is_admin()
     );
   end if;
 end $$;
@@ -503,11 +531,11 @@ do $$ begin
   end if;
   if not exists (select from pg_policies where policyname = 'Admins can view all transactions' and tablename = 'loyalty_transactions') then
     create policy "Admins can view all transactions" on loyalty_transactions for select using (
-        exists (select 1 from profiles where id = auth.uid() and role = 'admin')
+        is_admin()
     );
   end if;
   if not exists (select from pg_policies where policyname = 'Admins can insert loyalty transactions' and tablename = 'loyalty_transactions') then
-    create policy "Admins can insert loyalty transactions" on loyalty_transactions for insert with check (exists (select 1 from profiles where id = auth.uid() and role = 'admin'));
+    create policy "Admins can insert loyalty transactions" on loyalty_transactions for insert with check (is_admin());
   end if;
 end $$;
 
@@ -521,7 +549,7 @@ do $$ begin
   end if;
   if not exists (select from pg_policies where policyname = 'Admins can maintain withdraw requests' and tablename = 'withdraw_requests') then
     create policy "Admins can maintain withdraw requests" on withdraw_requests for all using (
-        exists (select 1 from profiles where id = auth.uid() and role = 'admin')
+        is_admin()
     );
   end if;
 end $$;

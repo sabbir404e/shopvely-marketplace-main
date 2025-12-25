@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Send, MessageSquare } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import Header from '@/components/layout/Header';
@@ -7,8 +7,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { toast } from '@/hooks/use-toast';
-
 import { useLocation } from 'react-router-dom';
+import emailjs from '@emailjs/browser';
 
 const Contact: React.FC = () => {
   const { t } = useTranslation();
@@ -21,7 +21,7 @@ const Contact: React.FC = () => {
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (location.hash) {
       const element = document.querySelector(location.hash);
       if (element) {
@@ -33,7 +33,6 @@ const Contact: React.FC = () => {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }));
   };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -48,16 +47,37 @@ const Contact: React.FC = () => {
 
     setIsSubmitting(true);
 
-    // Simulate form submission
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    try {
+      // Replace these with your actual EmailJS credentials
+      const SERVICE_ID = 'YOUR_SERVICE_ID';
+      const TEMPLATE_ID = 'YOUR_TEMPLATE_ID';
+      const PUBLIC_KEY = 'YOUR_PUBLIC_KEY';
 
-    toast({
-      title: t('contact.form.successTitle'),
-      description: t('contact.form.successDesc'),
-    });
+      const templateParams = {
+        from_name: formData.name,
+        from_email: formData.email,
+        subject: formData.subject,
+        message: formData.message,
+      };
 
-    setFormData({ name: '', email: '', subject: '', message: '' });
-    setIsSubmitting(false);
+      await emailjs.send(SERVICE_ID, TEMPLATE_ID, templateParams, PUBLIC_KEY);
+
+      toast({
+        title: t('contact.form.successTitle'),
+        description: t('contact.form.successDesc'),
+      });
+
+      setFormData({ name: '', email: '', subject: '', message: '' });
+    } catch (error) {
+      console.error('EmailJS Error:', error);
+      toast({
+        title: t('contact.form.errorTitle'),
+        description: "Failed to send message. Please try again later.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
 
