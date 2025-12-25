@@ -12,6 +12,7 @@ import { OrderProvider } from "@/context/OrderContext";
 import { SettingsProvider } from "@/context/SettingsContext";
 import AdminRoute from "@/components/AdminRoute";
 import ScrollToTop from "@/components/ScrollToTop";
+import ReferralTracker from "@/components/ReferralTracker";
 import Index from "./pages/Index";
 import Shop from "./pages/Shop";
 import ProductDetail from "./pages/ProductDetail";
@@ -47,6 +48,7 @@ const App = () => (
                     <Toaster />
                     <Sonner />
                     <BrowserRouter>
+                      <ReferralTracker />
                       <ScrollToTop />
                       <Routes>
                         <Route path="/" element={<Index />} />

@@ -29,7 +29,13 @@ const Auth: React.FC = () => {
 
   useEffect(() => {
     setIsLogin(searchParams.get('mode') !== 'signup');
-  }, [searchParams]);
+
+    // Auto-fill referral code
+    const refCode = searchParams.get('ref') || localStorage.getItem('referralCode');
+    if (refCode && !isLogin) {
+      setFormData(prev => ({ ...prev, referralCode: refCode }));
+    }
+  }, [searchParams, isLogin]);
 
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
