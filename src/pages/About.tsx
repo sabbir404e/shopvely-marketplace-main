@@ -22,9 +22,13 @@ const About: React.FC = () => {
 
   React.useEffect(() => {
     if (location.hash) {
-      const element = document.querySelector(location.hash);
-      if (element) {
-        element.scrollIntoView({ behavior: 'smooth' });
+      try {
+        const element = document.querySelector(location.hash);
+        if (element) {
+          element.scrollIntoView({ behavior: 'smooth' });
+        }
+      } catch (e) {
+        // Ignore invalid selectors
       }
     }
   }, [location]);

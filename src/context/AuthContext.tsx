@@ -54,49 +54,22 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return null;
   };
 
-  const checkUserRole = async (userId: string, profileData?: Profile) => {
-    console.log('Checking role for:', userId);
+  const checkUserRole = async (userId: string, email: string | undefined, profileData?: Profile) => {
+    console.log('Checking role for:', userId, email);
 
-    // 1. Check Profile directly if available
-    if (profileData && profileData.role === 'admin') {
-      console.log('User IS admin (from profile)');
+    const ADMIN_EMAIL = 'shopvelyofficial@gmail.com';
+
+    // 1. Strict Email Check for Admin
+    if (email === ADMIN_EMAIL) {
+      console.log('User IS admin (by email match)');
       setIsAdmin(true);
       setUserRole('admin');
       return;
     }
 
-    // 2. Fallback to RPC for extra security or if profile not passed
-    const { data: adminData, error: adminError } = await supabase.rpc('has_role', {
-      _user_id: userId,
-      _role: 'admin'
-    });
-
-    console.log('Admin Check Result (RPC):', { adminData, adminError });
-
-    if (adminData) {
-      console.log('User IS admin (from RPC)');
-      setIsAdmin(true);
-      setUserRole('admin');
-      return;
-    }
-
-    if (adminError) {
-      console.error('Error checking admin role:', adminError);
-    }
-
-    // Check for manager
-    const { data: managerData } = await supabase.rpc('has_role', {
-      _user_id: userId,
-      _role: 'manager' as any
-    });
-
-    if (managerData) {
-      setIsAdmin(true); // Allow access to admin panel
-      setUserRole('manager' as any);
-      return;
-    }
-
-    console.log('User is CUSTOMER');
+    // 2. For everyone else, strictly deny admin access
+    // We ignore DB role if it claims admin, ensuring only the specific email has access
+    console.log('User is CUSTOMER (strict enforce)');
     setIsAdmin(false);
     setUserRole('customer');
   };
@@ -112,7 +85,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         if (session?.user) {
           setTimeout(async () => {
             const profileData = await fetchProfile(session.user.id);
-            checkUserRole(session.user.id, profileData || undefined);
+            checkUserRole(session.user.id, session.user.email, profileData || undefined);
           }, 0);
         } else {
           setProfile(null);
@@ -130,7 +103,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       if (session?.user) {
         const profileData = await fetchProfile(session.user.id);
-        checkUserRole(session.user.id, profileData || undefined);
+        checkUserRole(session.user.id, session.user.email, profileData || undefined);
       }
       setLoading(false);
     });
