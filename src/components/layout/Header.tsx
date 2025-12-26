@@ -175,35 +175,42 @@ const Header: React.FC = () => {
           <div className="flex items-center gap-2 sm:gap-4">
             <Link
               to="/wishlist"
-              className="relative p-2 hover:bg-white/10 rounded-full transition-colors"
+              className="group flex flex-col items-center gap-0.5 p-1.5 hover:bg-white/10 rounded-lg transition-colors"
             >
-              <Heart className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
-              {wishlistItems > 0 && (
-                <span className="absolute -top-1 -right-1 h-5 w-5 bg-primary text-primary-foreground text-xs font-bold rounded-full flex items-center justify-center">
-                  {wishlistItems}
-                </span>
-              )}
+              <div className="relative">
+                <Heart className="h-5 w-5 sm:h-6 sm:w-6 text-white group-hover:scale-105 transition-transform" />
+                {wishlistItems > 0 && (
+                  <span className="absolute -top-1.5 -right-1.5 h-4 w-4 sm:h-5 sm:w-5 bg-primary text-primary-foreground text-[10px] sm:text-xs font-bold rounded-full flex items-center justify-center border-2 border-header-bg">
+                    {wishlistItems}
+                  </span>
+                )}
+              </div>
+              <span className="text-[10px] sm:text-xs font-medium text-white/90">{t('common.wishlist')}</span>
             </Link>
 
             <Link
               to="/cart"
-              className="relative p-2 hover:bg-white/10 rounded-full transition-colors"
+              className="group flex flex-col items-center gap-0.5 p-1.5 hover:bg-white/10 rounded-lg transition-colors"
             >
-              <ShoppingCart className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
-              {cartItems > 0 && (
-                <span className="absolute -top-1 -right-1 h-5 w-5 bg-primary text-primary-foreground text-xs font-bold rounded-full flex items-center justify-center">
-                  {cartItems}
-                </span>
-              )}
+              <div className="relative">
+                <ShoppingCart className="h-5 w-5 sm:h-6 sm:w-6 text-white group-hover:scale-105 transition-transform" />
+                {cartItems > 0 && (
+                  <span className="absolute -top-1.5 -right-1.5 h-4 w-4 sm:h-5 sm:w-5 bg-primary text-primary-foreground text-[10px] sm:text-xs font-bold rounded-full flex items-center justify-center border-2 border-header-bg">
+                    {cartItems}
+                  </span>
+                )}
+              </div>
+              <span className="text-[10px] sm:text-xs font-medium text-white/90">{t('common.cart')}</span>
             </Link>
 
             {user ? (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <button className="hidden sm:flex p-2 hover:bg-white/10 rounded-full transition-colors">
-                    <div className="h-6 w-6 rounded-full bg-white/20 flex items-center justify-center">
+                  <button className="hidden sm:flex flex-col items-center gap-0.5 p-1.5 hover:bg-white/10 rounded-lg transition-colors group">
+                    <div className="h-6 w-6 rounded-full bg-white/20 flex items-center justify-center group-hover:bg-white/30 transition-colors">
                       <User className="h-4 w-4 text-white" />
                     </div>
+                    <span className="text-[10px] sm:text-xs font-medium text-white/90">{t('common.profile')}</span>
                   </button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-48 bg-card">
@@ -242,9 +249,12 @@ const Header: React.FC = () => {
             ) : (
               <Link
                 to="/auth"
-                className="hidden sm:flex p-2 hover:bg-white/10 rounded-full transition-colors"
+                className="hidden sm:flex flex-col items-center gap-0.5 p-1.5 hover:bg-white/10 rounded-lg transition-colors group"
               >
-                <User className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
+                <div className="h-6 w-6 rounded-full flex items-center justify-center">
+                  <User className="h-5 w-5 sm:h-6 sm:w-6 text-white group-hover:scale-105 transition-transform" />
+                </div>
+                <span className="text-[10px] sm:text-xs font-medium text-white/90">{t('common.profile')}</span>
               </Link>
             )}
 

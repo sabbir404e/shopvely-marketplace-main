@@ -4,6 +4,9 @@
     "shop": "Shop",
     "about": "About Us",
     "contact": "Contact",
+    "wishlist": "Wishlist",
+    "cart": "Cart",
+    "profile": "Profile",
     "login": "Login",
     "signUp": "Sign Up",
     "signOut": "Sign Out",
@@ -185,7 +188,7 @@
     "privacyPolicy": "Privacy Policy",
     "termsConditions": "Terms & Conditions",
     "paymentMethods": "Payment Methods",
-    "phone": "01797832574",
+    "phone": "+8801797832574",
     "workingHours": "Working Hours",
     "workingHoursValue": "Sat - Thu: 9AM - 12PM",
     "allRightsReserved": "All Rights Reserved"

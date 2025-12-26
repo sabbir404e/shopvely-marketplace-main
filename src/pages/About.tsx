@@ -71,7 +71,7 @@ const About: React.FC = () => {
       facebook: 'https://www.facebook.com/wadud285',
       details: [
         'Bachelor Degree & Post Graduation Completed from Rajshahi College, Department of Management, Rajshahi',
-        'Contact 01796952446'
+        'Contact +8801796952446'
       ]
     },
     {
@@ -81,7 +81,7 @@ const About: React.FC = () => {
       facebook: 'https://www.facebook.com/MdSabbirHossain.CSE.PUST',
       details: [
         'Studying CSE at Pabna University of Science and Technology, Pabna',
-        'Contact 01786981164'
+        'Contact +8801786981164'
       ]
     },
     {
@@ -91,7 +91,7 @@ const About: React.FC = () => {
       facebook: 'https://www.facebook.com/sayeed.alip',
       details: [
         'Studying Islamic History at New Government Degree College, Rajshahi',
-        'Contact 0 1317445169'
+        'Contact +8801317445169'
       ]
     },
     {
@@ -101,7 +101,7 @@ const About: React.FC = () => {
       facebook: 'https://www.facebook.com/tusar.ahmed.nayeem',
       details: [
         'Studying Chemistry at Jagannath University, Dhaka',
-        'Contact 01859861241'
+        'Contact +8801859861241'
       ]
     },
     {
@@ -111,7 +111,7 @@ const About: React.FC = () => {
       facebook: 'https://www.facebook.com/sunsingra',
       details: [
         'Studying Diploma in Electrical Engineering at Chapainawabganj Polytechnic Institute, Chapainawabganj',
-        'Contact 01317448654'
+        'Contact +8801317448654'
       ]
     },
     {
@@ -121,7 +121,7 @@ const About: React.FC = () => {
       facebook: 'https://www.facebook.com/mdazomhossin.babul.31',
       details: [
         'Studying Diploma in Civil Engineering at Bogura Polytechnic Institute, Bogura',
-        'Contact 01744945758'
+        'Contact +8801744945758'
       ]
     },
   ];
