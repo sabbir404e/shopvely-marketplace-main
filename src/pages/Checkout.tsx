@@ -329,7 +329,7 @@ const Checkout: React.FC = () => {
                         <div className="flex items-center gap-2">
                           <p className="text-sm font-medium text-foreground">
                             {t('checkout.sendMoneyTo')} <span className="text-primary font-bold">
-                              {selectedMobileService === 'bKash' && '01797832574'}
+                              {selectedMobileService === 'bKash' && '01786981164'}
                               {selectedMobileService === 'Nagad' && '01965308721'}
                               {selectedMobileService === 'Rocket' && '01720067890'}
                               {selectedMobileService === 'Upay' && '01722097094'}
@@ -342,7 +342,7 @@ const Checkout: React.FC = () => {
                             className="h-6 w-6"
                             onClick={() => {
                               const number =
-                                selectedMobileService === 'bKash' ? '01797832574' :
+                                selectedMobileService === 'bKash' ? '01786981164' :
                                   selectedMobileService === 'Nagad' ? '01965308721' :
                                     selectedMobileService === 'Rocket' ? '01720067890' :
                                       '01722097094';

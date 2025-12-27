@@ -24,7 +24,7 @@ import { useTranslation } from 'react-i18next';
 
 const Auth: React.FC = () => {
   const { t } = useTranslation();
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [isLogin, setIsLogin] = useState(searchParams.get('mode') !== 'signup');
 
   useEffect(() => {
@@ -411,9 +411,20 @@ const Auth: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => {
-                    setIsLogin(!isLogin);
+                    const newMode = isLogin ? 'signup' : 'login';
+                    const newParams = new URLSearchParams(searchParams);
+                    newParams.set('mode', newMode);
+                    setSearchParams(newParams);
+
                     setErrors({});
-                    setFormData({ fullName: '', email: '', password: '', confirmPassword: '', referralCode: '' });
+                    setFormData(prev => ({
+                      ...prev,
+                      fullName: '',
+                      email: '',
+                      password: '',
+                      confirmPassword: '',
+                      referralCode: prev.referralCode
+                    }));
                   }}
                   className="ml-1 text-primary hover:underline font-medium"
                 >

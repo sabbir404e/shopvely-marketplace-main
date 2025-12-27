@@ -19,7 +19,7 @@ import tiktokLogo from '@/assets/social/tiktok.png';
 
 const Footer: React.FC = () => {
   const currentYear = new Date().getFullYear();
-  const whatsappNumber = '+8801797832574';
+  const whatsappNumber = '+8801786981164';
   const { t } = useTranslation();
   const { settings } = useSettings();
 
