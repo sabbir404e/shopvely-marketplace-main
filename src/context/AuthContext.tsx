@@ -51,6 +51,39 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setProfile(profileData);
       return profileData;
     }
+
+    // If no profile exists (can happen with OAuth), create one
+    console.log('No profile found for user, creating one...');
+    const { data: { user } } = await supabase.auth.getUser();
+
+    if (user) {
+      // Generate referral code
+      const baseName = user.user_metadata?.full_name || user.email?.split('@')[0] || 'USER';
+      const referralCode = `${baseName.toUpperCase().replace(/[^A-Z0-9]/g, '').substring(0, 6)}${Math.floor(Math.random() * 9000 + 1000)}`;
+
+      const { data: newProfile, error: insertError } = await supabase
+        .from('profiles')
+        .insert({
+          id: userId,
+          email: user.email || '',
+          full_name: user.user_metadata?.full_name || null,
+          avatar_url: user.user_metadata?.avatar_url || null,
+          loyalty_points: 0,
+          referral_code: referralCode,
+          role: 'customer'
+        })
+        .select()
+        .single();
+
+      if (!insertError && newProfile) {
+        const profileData = newProfile as unknown as Profile;
+        setProfile(profileData);
+        return profileData;
+      } else {
+        console.error('Error creating profile:', insertError);
+      }
+    }
+
     return null;
   };
 

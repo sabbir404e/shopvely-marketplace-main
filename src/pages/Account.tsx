@@ -368,7 +368,7 @@ const Account: React.FC = () => {
                       </div>
                     </div>
                     <p className="text-xs text-muted-foreground">
-                      Share this code or link with friends. You both get 50 points when they make their first purchase!
+                      Share this code or link with friends. You will get a 5% commission when they make any purchase!
                     </p>
                   </div>
                 ) : (

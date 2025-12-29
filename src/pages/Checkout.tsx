@@ -21,7 +21,7 @@ const Checkout: React.FC = () => {
   const { addOrder } = useOrders();
   const { user } = useAuth();
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('cod');
-  const [selectedCard, setSelectedCard] = useState<'visa' | 'mastercard'>('visa');
+  const [selectedCard, setSelectedCard] = useState<'dbbl'>('dbbl');
   const [selectedMobileService, setSelectedMobileService] = useState('bKash');
   const [couponCode, setCouponCode] = useState('');
   const [transactionId, setTransactionId] = useState('');
@@ -155,7 +155,7 @@ const Checkout: React.FC = () => {
   const paymentMethods = [
     { id: 'cod' as const, label: t('checkout.cashOnDelivery'), icon: Banknote, desc: t('checkout.payWhenReceive') },
     { id: 'mobile' as const, label: t('checkout.mobileBanking'), icon: Wallet, desc: 'bKash, Nagad, Rocket, Upay' },
-    { id: 'card' as const, label: t('checkout.cardPayment'), icon: CreditCard, desc: 'Visa, Mastercard' },
+    { id: 'card' as const, label: t('checkout.cardPayment'), icon: CreditCard, desc: 'DBBL' },
   ];
 
   return (
@@ -329,10 +329,10 @@ const Checkout: React.FC = () => {
                         <div className="flex items-center gap-2">
                           <p className="text-sm font-medium text-foreground">
                             {t('checkout.sendMoneyTo')} <span className="text-primary font-bold">
-                              {selectedMobileService === 'bKash' && '01786981164'}
+                              {selectedMobileService === 'bKash' && '01965308721'}
                               {selectedMobileService === 'Nagad' && '01965308721'}
-                              {selectedMobileService === 'Rocket' && '01720067890'}
-                              {selectedMobileService === 'Upay' && '01722097094'}
+                              {selectedMobileService === 'Rocket' && '01965308721'}
+                              {selectedMobileService === 'Upay' && '01965308721'}
                             </span>
                           </p>
                           <Button
@@ -342,10 +342,10 @@ const Checkout: React.FC = () => {
                             className="h-6 w-6"
                             onClick={() => {
                               const number =
-                                selectedMobileService === 'bKash' ? '01786981164' :
+                                selectedMobileService === 'bKash' ? '01965308721' :
                                   selectedMobileService === 'Nagad' ? '01965308721' :
-                                    selectedMobileService === 'Rocket' ? '01720067890' :
-                                      '01722097094';
+                                    selectedMobileService === 'Rocket' ? '01965308721' :
+                                      '01965308721';
 
                               navigator.clipboard.writeText(number);
                               toast({
@@ -377,28 +377,9 @@ const Checkout: React.FC = () => {
                   {paymentMethod === 'card' && (
                     <div className="mt-4 p-4 bg-muted/50 rounded-lg space-y-4">
                       <div>
-                        <p className="text-sm text-muted-foreground mb-2">
-                          {t('checkout.selectCardType')}
-                        </p>
-                        <div className="flex flex-wrap gap-2 mb-3">
-                          {['Visa', 'Mastercard'].map((type) => (
-                            <span
-                              key={type}
-                              className={cn(
-                                "px-3 py-1.5 border rounded-lg text-sm cursor-pointer transition-colors",
-                                selectedCard === type.toLowerCase()
-                                  ? "bg-primary text-primary-foreground border-primary"
-                                  : "bg-card border-border hover:border-primary"
-                              )}
-                              onClick={() => setSelectedCard(type.toLowerCase() as 'visa' | 'mastercard')}
-                            >
-                              {type}
-                            </span>
-                          ))}
-                        </div>
                         <div className="flex items-center gap-2">
                           <p className="text-sm font-medium text-foreground">
-                            {selectedCard === 'visa' ? 'Visa' : 'Mastercard'} {t('checkout.number')}: <span className="text-primary font-bold">{selectedCard === 'visa' ? '8765432567890982' : '1144678909054376'}</span>
+                            DBBL {t('checkout.number')}: <span className="text-primary font-bold">7017345210425</span>
                           </p>
                           <Button
                             type="button"
@@ -406,7 +387,7 @@ const Checkout: React.FC = () => {
                             size="icon"
                             className="h-6 w-6"
                             onClick={() => {
-                              navigator.clipboard.writeText(selectedCard === 'visa' ? '8765432567890982' : '1144678909054376');
+                              navigator.clipboard.writeText('7017345210425');
                               toast({
                                 title: "Success",
                                 description: t('checkout.numberCopied'),
