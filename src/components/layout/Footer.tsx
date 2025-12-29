@@ -53,16 +53,16 @@ const Footer: React.FC = () => {
               <a href="https://www.facebook.com/ShopVely" target="_blank" rel="noopener noreferrer" className="hover:opacity-80 transition-opacity">
                 <img src={facebookLogo} alt="Facebook" className="h-8 w-8 object-contain" />
               </a>
-              <a href="https://www.instagram.com/shopvely" target="_blank" rel="noopener noreferrer" className="hover:opacity-80 transition-opacity">
+              <a href="https://www.instagram.com/shopvely.official" target="_blank" rel="noopener noreferrer" className="hover:opacity-80 transition-opacity">
                 <img src={instagramLogo} alt="Instagram" className="h-8 w-8 object-contain" />
               </a>
-              <a href="https://www.youtube.com/@shopvely" target="_blank" rel="noopener noreferrer" className="hover:opacity-80 transition-opacity">
+              <a href="https://www.youtube.com/@ShopVely" target="_blank" rel="noopener noreferrer" className="hover:opacity-80 transition-opacity">
                 <img src={youtubeLogo} alt="YouTube" className="h-8 w-8 object-contain" />
               </a>
-              <a href="https://twitter.com/shopvely" target="_blank" rel="noopener noreferrer" className="hover:opacity-80 transition-opacity">
+              <a href="https://x.com/shop_vely" target="_blank" rel="noopener noreferrer" className="hover:opacity-80 transition-opacity">
                 <img src={twitterLogo} alt="Twitter" className="h-8 w-8 object-contain" />
               </a>
-              <a href="https://www.tiktok.com/@shopvely" target="_blank" rel="noopener noreferrer" className="hover:opacity-80 transition-opacity">
+              <a href="https://www.tiktok.com/@shopvelyofficial" target="_blank" rel="noopener noreferrer" className="hover:opacity-80 transition-opacity">
                 <img src={tiktokLogo} alt="TikTok" className="h-8 w-8 object-contain" />
               </a>
             </div>
