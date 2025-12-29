@@ -79,6 +79,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         const profileData = newProfile as unknown as Profile;
         setProfile(profileData);
         return profileData;
+      } else if (insertError?.code === '23505') {
+        // Profile already exists (likely created by trigger), fetch it
+        console.log('Profile already exists (conflict), fetching...');
+        const { data: existingProfile } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', userId)
+          .single();
+
+        if (existingProfile) {
+          const profileData = existingProfile as unknown as Profile;
+          setProfile(profileData);
+          return profileData;
+        }
       } else {
         console.error('Error creating profile:', insertError);
       }
@@ -108,18 +122,37 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   useEffect(() => {
+    let mounted = true;
+    let retryTimeout: NodeJS.Timeout;
+
+    const fetchProfileWithRetry = async (userId: string, retries = 3) => {
+      if (!mounted) return;
+
+      const profileData = await fetchProfile(userId);
+      if (profileData) {
+        checkUserRole(userId, user?.email, profileData);
+      } else if (retries > 0) {
+        console.log(`Profile not found, retrying... (${retries} attempts left)`);
+        retryTimeout = setTimeout(() => {
+          fetchProfileWithRetry(userId, retries - 1);
+        }, 1000);
+      }
+    };
+
     // Set up auth state listener FIRST
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
+        if (!mounted) return;
+
         setSession(session);
         setUser(session?.user ?? null);
 
-        // Defer Supabase calls with setTimeout to prevent deadlock
         if (session?.user) {
-          setTimeout(async () => {
-            const profileData = await fetchProfile(session.user.id);
-            checkUserRole(session.user.id, session.user.email, profileData || undefined);
-          }, 0);
+          // Small delay to allow DB trigger to finish
+          checkUserRole(session.user.id, session.user.email); // Check role immediately with email
+          retryTimeout = setTimeout(() => {
+            fetchProfileWithRetry(session.user.id);
+          }, 500);
         } else {
           setProfile(null);
           setIsAdmin(false);
@@ -129,20 +162,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
     );
 
-    // THEN check for existing session
-    supabase.auth.getSession().then(async ({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-
-      if (session?.user) {
-        const profileData = await fetchProfile(session.user.id);
-        checkUserRole(session.user.id, session.user.email, profileData || undefined);
-      }
-      setLoading(false);
-    });
-
     return () => {
+      mounted = false;
       subscription.unsubscribe();
+      clearTimeout(retryTimeout);
     };
   }, []);
 
