@@ -19,6 +19,7 @@ import { cn } from '@/lib/utils';
 const ProductDetail: React.FC = () => {
   const { t } = useTranslation();
   const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
   const { products, getProduct } = useProducts();
   const product = getProduct(id || '');
   const { addToCart } = useCart();
@@ -64,7 +65,7 @@ const ProductDetail: React.FC = () => {
     addToCart(product, quantity, selectedSize);
   };
 
-  const navigate = useNavigate();
+
 
   const handleBuyNow = () => {
     addToCart(product, quantity, selectedSize);
