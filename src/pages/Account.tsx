@@ -46,6 +46,7 @@ const Account: React.FC = () => {
   const [paymentNumber, setPaymentNumber] = React.useState('');
   const [withdrawHistory, setWithdrawHistory] = React.useState<any[]>([]);
   const [isWithdrawing, setIsWithdrawing] = React.useState(false);
+  const [referrals, setReferrals] = React.useState<any[]>([]);
 
   useEffect(() => {
     if (!loading && !user) {
@@ -53,6 +54,7 @@ const Account: React.FC = () => {
     }
     if (user) {
       fetchWithdrawHistory();
+      fetchReferrals();
     }
   }, [user, loading, navigate]);
 
@@ -67,6 +69,21 @@ const Account: React.FC = () => {
 
     if (data) {
       setWithdrawHistory(data);
+    }
+  };
+
+
+
+  const fetchReferrals = async () => {
+    if (!user) return;
+    const { data } = await supabase
+      .from('profiles' as any)
+      .select('full_name, referral_code, created_at')
+      .eq('referred_by_user_id', user.id)
+      .order('created_at', { ascending: false });
+
+    if (data) {
+      setReferrals(data);
     }
   };
 
@@ -402,6 +419,58 @@ const Account: React.FC = () => {
                   <LogOut className="h-4 w-4 mr-2" />
                   Sign Out
                 </Button>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Referral List Section */}
+          <div className="mt-8 space-y-4">
+            {/* Total Count */}
+            <div className="flex items-center gap-2">
+              <h2 className="text-xl font-semibold">Referral Status</h2>
+              <Badge variant="secondary" className="text-lg px-3 py-1">
+                Total Referrals: {referrals.length}
+              </Badge>
+            </div>
+
+            {/* Referral Table */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <User className="h-5 w-5" />
+                  Referral List
+                </CardTitle>
+                <CardDescription>People who joined using your code</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="max-h-[300px] overflow-y-auto">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead className="w-[100px]">Serial No</TableHead>
+                        <TableHead>Referral Name</TableHead>
+                        <TableHead>Referral ID</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {referrals.length === 0 ? (
+                        <TableRow>
+                          <TableCell colSpan={3} className="text-center text-muted-foreground">No referrals yet.</TableCell>
+                        </TableRow>
+                      ) : (
+                        referrals.map((referral: any, index: number) => (
+                          <TableRow key={index}>
+                            <TableCell className="font-medium">{index + 1}</TableCell>
+                            <TableCell>{referral.full_name || 'N/A'}</TableCell>
+                            <TableCell>
+                              <code className="bg-muted px-2 py-1 rounded">{referral.referral_code || 'N/A'}</code>
+                            </TableCell>
+                          </TableRow>
+                        ))
+                      )}
+                    </TableBody>
+                  </Table>
+                </div>
               </CardContent>
             </Card>
           </div>
